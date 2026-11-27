@@ -247,6 +247,11 @@ public class MTEInternet extends MTEComputeFacility<MTEInternet> implements ISur
     }
 
     @Override
+    protected int structureReach() {
+        return 10;
+    }
+
+    @Override
     protected void facilityTick() {
         if (this.ticks % 20 == 0) {
             this.recompute();

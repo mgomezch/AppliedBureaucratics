@@ -290,6 +290,11 @@ public class MTEDataCenter extends MTEComputeFacility<MTEDataCenter> implements 
     }
 
     @Override
+    protected int structureReach() {
+        return ABConfig.dataCenterMaxLength + 1;
+    }
+
+    @Override
     protected void facilityTick() {
         this.slots.setSlotCount(this.mMachine ? ABConfig.dataCenterSlots : 0);
         if (this.ticks % 20 == 0) {

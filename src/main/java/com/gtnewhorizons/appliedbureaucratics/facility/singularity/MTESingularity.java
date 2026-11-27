@@ -288,6 +288,11 @@ public class MTESingularity extends MTEComputeFacility<MTESingularity> implement
     }
 
     @Override
+    protected int structureReach() {
+        return 18;
+    }
+
+    @Override
     protected void facilityTick() {
         this.slots.setSlotCount(this.mMachine ? 64 : 0);
         if (this.ticks % 20 == 0) {
