@@ -85,6 +85,11 @@ public class AppliedBureaucratics {
     }
 
     @Mod.EventHandler
+    public void loadComplete(cpw.mods.fml.common.event.FMLLoadCompleteEvent event) {
+        com.gtnewhorizons.appliedbureaucratics.integration.ae2.LegacyCpuGate.apply();
+    }
+
+    @Mod.EventHandler
     public void serverStarting(FMLServerStartingEvent event) {
         event.registerServerCommand(new CommandAB());
     }

@@ -20,6 +20,8 @@ public final class ABConfig {
     public static double meteredCpuFactor = 0.25;
     public static double legacyCpuFactor = 1.0;
     public static int meteredCoProcessorCap = 64;
+    /// Stock crafting CPU blocks need a ZPM assembler. Blocks already placed are unaffected.
+    public static boolean gateStockCpuRecipes = true;
     /// Planning steps per second each stock cluster without legacy blocks adds to its network.
     public static double meteredClusterPlanningRate = 8;
     /// Contracted mobs on shift take no damage.
@@ -118,6 +120,9 @@ public final class ABConfig {
         meteredCoProcessorCap = c
             .get(ae2, "meteredCoProcessorCap", meteredCoProcessorCap, "Co-processing cap of a metered cluster.")
             .getInt();
+        gateStockCpuRecipes = c
+            .get(ae2, "gateStockCpuRecipes", gateStockCpuRecipes, "Stock crafting CPU blocks need a ZPM assembler.")
+            .getBoolean();
         meteredClusterPlanningRate = c
             .get(ae2, "meteredClusterPlanningRate", meteredClusterPlanningRate, "Planning a stock cluster adds.")
             .getDouble();

@@ -39,6 +39,7 @@ public final class OCIntegration {
 
     public static void init() {
         Driver.add(new DriverRequisitionUpgrade());
+        Driver.add(new DriverFacility());
         Items.registerFloppy(
             "workerd",
             10,

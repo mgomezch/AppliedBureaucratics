@@ -30,6 +30,13 @@ public interface IComputeFacility {
         return false;
     }
 
+    /// Pins the share of the facility's FTE spent planning, or with null lets it choose (the default: all of it while
+    /// idle, none while busy, a quarter while both). For OpenComputers' `setAllocation`.
+    default void setPinnedPlanningShare(final Double share) {}
+
+    /// Forces crunch on or off, or with null leaves it to redstone. For OpenComputers' `setCrunch`.
+    default void setCrunchOverride(final Boolean crunch) {}
+
     /// Lines for `/ab status`: the bottleneck first, then the figures.
     default List<String> statusLines() {
         return Collections.emptyList();

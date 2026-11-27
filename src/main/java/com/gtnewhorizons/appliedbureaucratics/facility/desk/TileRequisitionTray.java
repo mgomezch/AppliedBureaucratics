@@ -70,6 +70,8 @@ public class TileRequisitionTray extends TileEntity
     private Bottleneck bottleneck = Bottleneck.NO_POWER;
     private boolean paper;
     private boolean crunch;
+    private Double pinnedShare;
+    private Boolean crunchOverride;
     private boolean coffee;
     private boolean party;
     /// Sheets of paper owed for planning done and not yet taken from the paper slot.
@@ -117,7 +119,8 @@ public class TileRequisitionTray extends TileEntity
     private void recompute() {
         this.slots.setFiling(this.survey.filing());
         this.paper = this.takePaper();
-        this.crunch = this.worldObj.isBlockIndirectlyGettingPowered(this.xCoord, this.yCoord, this.zCoord);
+        this.crunch = this.crunchOverride != null ? this.crunchOverride
+            : this.worldObj.isBlockIndirectlyGettingPowered(this.xCoord, this.yCoord, this.zCoord);
         final TileBreakRoomCounter counter = TileBreakRoomCounter
             .near(this.worldObj, this.xCoord, this.yCoord, this.zCoord);
         final int staff = this.survey.hasWorker() ? 1 : 0;
@@ -186,6 +189,9 @@ public class TileRequisitionTray extends TileEntity
     /// The part of the worker's time spent planning: all of it while the slot is idle, none while it is busy and
     /// nothing is being planned on the network, a quarter while both.
     private double planningShare() {
+        if (this.pinnedShare != null) {
+            return this.pinnedShare;
+        }
         if (!this.slots.anyBusy()) {
             return 1;
         }
@@ -260,6 +266,16 @@ public class TileRequisitionTray extends TileEntity
     @Override
     public boolean isStaffed() {
         return true;
+    }
+
+    @Override
+    public void setPinnedPlanningShare(final Double share) {
+        this.pinnedShare = share == null ? null : Math.max(0, Math.min(1, share));
+    }
+
+    @Override
+    public void setCrunchOverride(final Boolean crunch) {
+        this.crunchOverride = crunch;
     }
 
     @Override

@@ -37,6 +37,8 @@ public abstract class MTEComputeFacility<T extends MTEEnhancedMultiBlockBase<T>>
     private @Nullable AENetworkProxy proxy;
     protected final FacilitySlots slots = new FacilitySlots(this);
     protected int ticks;
+    private @Nullable Double pinnedShare;
+    private @Nullable Boolean crunchOverride;
 
     protected MTEComputeFacility(final int id, final String name, final String regionalName) {
         super(id, name, regionalName);
@@ -109,11 +111,31 @@ public abstract class MTEComputeFacility<T extends MTEEnhancedMultiBlockBase<T>>
     /// The part of a facility's FTE spent planning: all of it while no slot is busy, none while one is and nothing is
     /// being planned on the network, a quarter while both.
     protected double planningShare() {
+        if (this.pinnedShare != null) {
+            return this.pinnedShare;
+        }
         if (!this.slots.anyBusy()) {
             return 1;
         }
         final IComputeGrid compute = this.computeGrid();
         return compute != null && compute.hasPlansInProgress() ? 0.25 : 0;
+    }
+
+    @Override
+    public void setPinnedPlanningShare(final @Nullable Double share) {
+        this.pinnedShare = share == null ? null : Math.max(0, Math.min(1, share));
+    }
+
+    @Override
+    public void setCrunchOverride(final @Nullable Boolean crunch) {
+        this.crunchOverride = crunch;
+    }
+
+    /// Whether the facility crunches: by OpenComputers' override if set, else by a redstone signal.
+    protected boolean isCrunching() {
+        return this.crunchOverride != null ? this.crunchOverride
+            : this.getBaseMetaTileEntity()
+                .getRedstone();
     }
 
     protected @Nullable IComputeGrid computeGrid() {

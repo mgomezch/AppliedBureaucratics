@@ -53,7 +53,7 @@ public class CommandAB extends CommandBase {
 
     @Override
     public String getCommandUsage(final ICommandSender sender) {
-        return "/ab status [x y z] | /ab craft <item> [count] [meta] | /ab debug pattern <x> <y> <z> <slot> <in> <inCount> <out> <outCount> | /ab debug ocitem <x> <y> <z> <slot> <name>";
+        return "/ab status [x y z] | /ab legacy | /ab craft <item> [count] [meta] | /ab debug pattern <x> <y> <z> <slot> <in> <inCount> <out> <outCount> | /ab debug ocitem <x> <y> <z> <slot> <name>";
     }
 
     @Override
@@ -69,7 +69,7 @@ public class CommandAB extends CommandBase {
     @Override
     @SuppressWarnings("rawtypes")
     public List addTabCompletionOptions(final ICommandSender sender, final String[] args) {
-        return args.length == 1 ? getListOfStringsMatchingLastWord(args, "status", "craft", "debug") : null;
+        return args.length == 1 ? getListOfStringsMatchingLastWord(args, "status", "craft", "legacy", "debug") : null;
     }
 
     @Override
@@ -89,6 +89,7 @@ public class CommandAB extends CommandBase {
                             parseInt(sender, args[3])))
                     : nearest(sender));
             case "craft" -> this.craft(sender, Arrays.copyOfRange(args, 1, args.length));
+            case "legacy" -> this.legacy(sender);
             case "debug" -> {
                 if (!sender.canCommandSenderUseCommand(2, "ab")) {
                     throw new WrongUsageException("/ab debug is for operators.");
@@ -281,5 +282,39 @@ public class CommandAB extends CommandBase {
         }
         inventory.setInventorySlotContents(slot, info.createItemStack(1));
         say(sender, "Item set.");
+    }
+
+    /// `/ab legacy`: where the legacy crafting CPU blocks are, those placed before this mod's policy, which keep their
+    /// full value and let their network plan unmetered. See the design document, section 9.
+    private void legacy(final ICommandSender sender) {
+        int legacy = 0;
+        int metered = 0;
+        final List<String> where = new java.util.ArrayList<>();
+        // AE2's crafting blocks do not tick, so they are not in the world's loaded tile list: look in the chunks.
+        final List<Object> tiles = new java.util.ArrayList<>();
+        if (sender.getEntityWorld() instanceof net.minecraft.world.WorldServer server) {
+            for (final Object chunk : server.theChunkProviderServer.loadedChunks) {
+                tiles.addAll(((net.minecraft.world.chunk.Chunk) chunk).chunkTileEntityMap.values());
+            }
+        }
+        for (final Object o : tiles) {
+            if (o instanceof appeng.tile.crafting.TileCraftingTile tile) {
+                if (tile.isComputeMetered()) {
+                    metered++;
+                } else {
+                    legacy++;
+                    if (where.size() < 10) {
+                        where.add(tile.xCoord + " " + tile.yCoord + " " + tile.zCoord);
+                    }
+                }
+            }
+        }
+        say(sender, String.format(Locale.ROOT, "Loaded crafting CPU blocks: %d legacy, %d metered.", legacy, metered));
+        for (final String w : where) {
+            say(sender, "  legacy at " + w);
+        }
+        if (legacy > where.size()) {
+            say(sender, "  and " + (legacy - where.size()) + " more.");
+        }
     }
 }

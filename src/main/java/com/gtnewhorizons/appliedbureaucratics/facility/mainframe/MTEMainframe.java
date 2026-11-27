@@ -543,11 +543,6 @@ public class MTEMainframe extends MTEComputeFacility<MTEMainframe> implements IS
         this.bottleneck = why;
     }
 
-    private boolean isCrunching() {
-        return this.getBaseMetaTileEntity()
-            .getRedstone();
-    }
-
     private double moraleTarget() {
         return new MoraleTarget(
             this.payroll.isPaid(),
