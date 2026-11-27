@@ -1,0 +1,12 @@
+// Add any additional repositories for your dependencies here.
+
+repositories {
+    // Our Applied-Energistics-2-NH fork with the compute policy hooks, published from
+    // mods/Applied-Energistics-2-NH with `VERSION=1.0.14-compute ./gradlew publishToMavenLocal`.
+    mavenLocal {
+        content {
+            includeModule("com.github.GTNewHorizons", "Applied-Energistics-2-NH")
+        }
+    }
+    mavenCentral()
+}
