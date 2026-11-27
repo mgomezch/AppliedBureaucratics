@@ -111,4 +111,16 @@ class PlanningPoolTest {
             () -> assertTrue(pool.hasCapacity()),
             () -> assertEquals(Long.MAX_VALUE, pool.grant("x", () -> PLAYER)));
     }
+
+    @Test
+    void aBusyFacilityThatCouldPlanKeepsPlansWaiting() {
+        final PlanningPool<String> pool = new PlanningPool<>();
+        pool.setCouldPlan(true);
+
+        assertAll(
+            () -> assertTrue(pool.hasCapacity(), "A plan must wait, not be refused"),
+            () -> assertEquals(0, pool.grant("x", () -> PLAYER)));
+        pool.tick();
+        assertEquals(1, pool.planCount(), "The waiting plan counts as pending, which turns planning on");
+    }
 }

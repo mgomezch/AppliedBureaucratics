@@ -94,9 +94,12 @@ public class ComputeGridCache implements IComputeGrid {
         }
         boolean legacy = false;
         boolean unmetered = false;
+        boolean couldPlan = false;
         for (final IComputeFacility facility : this.facilities) {
             unmetered |= facility.unmeteredPlanning();
+            couldPlan |= facility.couldPlan();
         }
+        this.pool.setCouldPlan(couldPlan);
         final ICraftingGrid crafting = this.grid.getCache(ICraftingGrid.class);
         for (final ICraftingCPU cpu : crafting.getCpus()) {
             if (cpu instanceof CraftingCPUCluster cluster && !(cpu instanceof HostedCraftingCPUCluster)) {

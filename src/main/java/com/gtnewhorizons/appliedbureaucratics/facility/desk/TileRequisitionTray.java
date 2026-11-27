@@ -269,6 +269,11 @@ public class TileRequisitionTray extends TileEntity
     }
 
     @Override
+    public boolean couldPlan() {
+        return this.output != FacilityOutput.OFF && this.survey.typewriter();
+    }
+
+    @Override
     public void setPinnedPlanningShare(final Double share) {
         this.pinnedShare = share == null ? null : Math.max(0, Math.min(1, share));
     }

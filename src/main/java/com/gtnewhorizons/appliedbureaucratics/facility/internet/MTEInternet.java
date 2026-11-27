@@ -391,6 +391,19 @@ public class MTEInternet extends MTEComputeFacility<MTEInternet> implements ISur
     }
 
     @Override
+    public boolean couldPlan() {
+        if (!this.isRunning() || !this.sky) {
+            return false;
+        }
+        for (final MTEMainframe mainframe : this.linked) {
+            if (mainframe.officeCouldPlan()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
     public void planningCharged(final double steps) {
         if (this.planning <= 0) {
             return;

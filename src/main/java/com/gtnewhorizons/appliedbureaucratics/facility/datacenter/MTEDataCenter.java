@@ -402,6 +402,11 @@ public class MTEDataCenter extends MTEComputeFacility<MTEDataCenter> implements 
     }
 
     @Override
+    public boolean couldPlan() {
+        return this.output != FacilityOutput.OFF;
+    }
+
+    @Override
     public double hallucinationChance() {
         return this.training.hallucinationChance();
     }

@@ -38,6 +38,7 @@ public final class PlanningPool<J> {
     private double credit;
     private double rate;
     private boolean unmetered;
+    private boolean couldPlan;
 
     /// A network's planning rate from its facilities' rates: staffed facilities plan by committee, their sum divided
     /// by the square root of their number (wrinkle (W5)); machine facilities add in full.
@@ -79,7 +80,13 @@ public final class PlanningPool<J> {
 
     /// Whether plans can ever advance here: false for a network with no planning rate and no credit left.
     public boolean hasCapacity() {
-        return this.unmetered || this.rate > 0 || this.credit >= 1;
+        return this.unmetered || this.rate > 0 || this.credit >= 1 || this.couldPlan;
+    }
+
+    /// Whether some facility on the network would plan once a plan is waiting, though the rate is 0 now (its slots
+    /// are busy). A plan that arrives then waits instead of being refused, and its arrival turns that planning on.
+    public void setCouldPlan(final boolean couldPlan) {
+        this.couldPlan = couldPlan;
     }
 
     /// Accrues a tick's credit and allocates it to the plans in progress.

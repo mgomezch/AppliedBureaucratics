@@ -12,6 +12,13 @@ public interface IComputeFacility {
     /// through another facility (a mainframe linked to an Internet).
     double getPlanningRate();
 
+    /// Whether this facility would plan if a plan were waiting. A facility whose slots are busy gives planning no
+    /// time until a plan is pending, so the network must not refuse a new plan just because its planning rate is 0
+    /// at that moment: see [com.gtnewhorizons.appliedbureaucratics.compute.PlanningPool#hasCapacity].
+    default boolean couldPlan() {
+        return this.getPlanningRate() > 0;
+    }
+
     /// Whether people staff it. Staffed facilities on one network plan by committee: see wrinkle (W5) of
     /// Note [The compute model].
     boolean isStaffed();

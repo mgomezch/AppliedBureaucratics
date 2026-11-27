@@ -625,6 +625,16 @@ public class MTEMainframe extends MTEComputeFacility<MTEMainframe> implements IS
     }
 
     @Override
+    public boolean couldPlan() {
+        return !this.isLinked() && this.output != FacilityOutput.OFF;
+    }
+
+    /// Whether the office would plan, linked or not, for its Internet.
+    public boolean officeCouldPlan() {
+        return this.output != FacilityOutput.OFF;
+    }
+
+    @Override
     public void planningCharged(final double steps) {
         this.sheetsOwed += steps / ComputeSettings.get().stepsPerSheet;
     }
