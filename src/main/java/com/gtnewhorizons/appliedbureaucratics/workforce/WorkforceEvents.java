@@ -53,10 +53,11 @@ public final class WorkforceEvents {
             || !Furniture.SEAT.matches(event.world.getBlock(event.x, event.y, event.z))) {
             return;
         }
+        // The client must still send the click: cancelling it there would keep it from the server.
         if (!event.world.isRemote) {
             WorkforceActions.assign(event.entityPlayer, held, event.world, event.x, event.y, event.z);
+            event.setCanceled(true);
         }
-        event.setCanceled(true);
     }
 
     @SubscribeEvent
