@@ -211,7 +211,10 @@ public class MTEMainframe extends MTEComputeFacility<MTEMainframe> implements IS
                         StructureUtility.ofBlock(rack != null ? rack : casing, 0)))
                 .addElement(
                     'X',
-                    StructureUtility.ofTileAdder(MTEMainframe::addConcentrator, ModBlocks.terminalConcentrator, 0))
+                    // The tile adder only checks; the block after it is what a projector or NEI's preview places.
+                    StructureUtility.ofChain(
+                        StructureUtility.ofTileAdder(MTEMainframe::addConcentrator, ModBlocks.terminalConcentrator, 0),
+                        StructureUtility.ofBlock(ModBlocks.terminalConcentrator, 0)))
                 .addElement('-', StructureUtility.isAir())
                 .build();
         }
