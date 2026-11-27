@@ -21,6 +21,7 @@ dependencies {
     compileOnly("com.github.GTNewHorizons:BloodMagic:1.10.0:dev") { transitive = false }
     compileOnly("thaumcraft:Thaumcraft:1.7.10-4.2.3.5:dev") { transitive = false }
     implementation("com.github.GTNewHorizons:GTNHLib:0.12.10:dev")
+    compileOnly("org.jspecify:jspecify:1.0.0")
 
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
