@@ -54,6 +54,10 @@ public final class ABConfig {
     public static double dataCenterFtePerCard = 0.128;
     public static int dataCenterPollution = 2000;
 
+    // The Singularity.
+    public static int singularityOpsPerTick = 1024;
+    public static double singularityPlanningRate = 400;
+
     // The break room.
     public static double breakRoomRange = 16;
     public static int coffeeWorkerDays = 4;
@@ -153,6 +157,16 @@ public final class ABConfig {
             .getDouble();
         dataCenterPollution = c.get(dc, "pollution", dataCenterPollution, "Pollution a second at full load.")
             .getInt();
+        singularityOpsPerTick = c
+            .get("singularity", "opsPerTick", singularityOpsPerTick, "Operations a tick at 100 % output.")
+            .getInt();
+        singularityPlanningRate = c
+            .get(
+                "singularity",
+                "planningRate",
+                singularityPlanningRate,
+                "Planning steps a second while it sulks below Alignment 25.")
+            .getDouble();
         breakRoomRange = c.get("breakroom", "range", breakRoomRange, "How far a Break Room Counter serves.")
             .getDouble();
         coffeeWorkerDays = c

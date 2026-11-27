@@ -93,6 +93,10 @@ public class ComputeGridCache implements IComputeGrid {
             }
         }
         boolean legacy = false;
+        boolean unmetered = false;
+        for (final IComputeFacility facility : this.facilities) {
+            unmetered |= facility.unmeteredPlanning();
+        }
         final ICraftingGrid crafting = this.grid.getCache(ICraftingGrid.class);
         for (final ICraftingCPU cpu : crafting.getCpus()) {
             if (cpu instanceof CraftingCPUCluster cluster && !(cpu instanceof HostedCraftingCPUCluster)) {
@@ -105,7 +109,7 @@ public class ComputeGridCache implements IComputeGrid {
         }
         this.pool.setRate(PlanningPool.networkRate(staffed, machines));
         this.hallucination = total > 0 && hallucinating * 2 >= total ? weighted / hallucinating : 0;
-        this.pool.setUnmetered(legacy && ABConfig.legacyPlanningUnmetered);
+        this.pool.setUnmetered(unmetered || legacy && ABConfig.legacyPlanningUnmetered);
         if (this.charged > 0 && total > 0) {
             for (final IComputeFacility facility : this.facilities) {
                 final double rate = facility.getPlanningRate();

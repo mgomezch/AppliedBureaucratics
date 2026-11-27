@@ -184,7 +184,7 @@ public class CommandAB extends CommandBase {
                     pool.getRate(),
                     pool.getCredit(),
                     pool.planCount(),
-                    pool.isUnmetered() ? ", unmetered (legacy CPUs)" : ""));
+                    pool.isUnmetered() ? ", unmetered" : ""));
         }
     }
 

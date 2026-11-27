@@ -156,6 +156,20 @@ final class Recipes {
             new Object[] { "CAC", "AHA", "CAC", 'C', OrePrefixes.circuit.get(Materials.LuV), 'A',
                 ItemComponent.Kind.ACCELERATOR_CARD.stack(1), 'H', ItemList.Hull_LuV });
         GTModHandler.addCraftingRecipe(
+            ItemComponent.Kind.PAPERCLIP.stack(8),
+            bits,
+            new Object[] { "WW", 'W', OrePrefixes.wireFine.get(Materials.Steel) });
+        GTModHandler.addCraftingRecipe(
+            new ItemStack(ModBlocks.casing, 1, Casing.CONTAINMENT.meta()),
+            bits,
+            new Object[] { "PFP", "FCF", "PFP", 'P', OrePrefixes.plateDense.get(Materials.Neutronium), 'F',
+                ItemList.Field_Generator_UV, 'C', OrePrefixes.frameGt.get(Materials.Neutronium) });
+        GTModHandler.addCraftingRecipe(
+            ModMetaTileEntities.singularity,
+            bits,
+            new Object[] { "CWC", "WHW", "CWC", 'C', OrePrefixes.circuit.get(Materials.UV), 'W',
+                ItemComponent.Kind.CONVERGED_MODEL_WEIGHTS.stack(1), 'H', ItemList.Hull_UV });
+        GTModHandler.addCraftingRecipe(
             ItemComponent.Kind.DISK_ARRAY.stack(1),
             bits,
             new Object[] { "HHH", "HCH", "HHH", 'H', ItemComponent.Kind.HIGH_DENSITY_TAPE_REEL.stack(1), 'C',

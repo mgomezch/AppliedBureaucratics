@@ -25,6 +25,11 @@ public interface IComputeFacility {
         return 0;
     }
 
+    /// Whether this facility makes its network's planning unmetered, as a well-disposed Singularity does.
+    default boolean unmeteredPlanning() {
+        return false;
+    }
+
     /// Lines for `/ab status`: the bottleneck first, then the figures.
     default List<String> statusLines() {
         return Collections.emptyList();

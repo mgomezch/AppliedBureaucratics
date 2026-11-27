@@ -42,3 +42,4 @@ layout.json
 /src/main/resources/nuclear-sim/nuclear-sim.js
 
 __pycache__/
+/inworld-tests/output/

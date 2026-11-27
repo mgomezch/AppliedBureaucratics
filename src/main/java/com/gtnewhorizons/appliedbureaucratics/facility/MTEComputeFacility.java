@@ -96,6 +96,11 @@ public abstract class MTEComputeFacility<T extends MTEEnhancedMultiBlockBase<T>>
         if (this.slots.hasSavedJobs() && node != null && node.getGrid() != null) {
             this.slots.restore();
         }
+        // GregTech re-checks a structure when a machine-block update reaches the controller, which does not reliably
+        // happen for blocks far from it in our large structures (a Singularity pylon); check every 10 s as well.
+        if (this.ticks % 200 == 199) {
+            this.onMachineBlockUpdate();
+        }
         this.facilityTick();
         this.ticks++;
         this.slots.tick();

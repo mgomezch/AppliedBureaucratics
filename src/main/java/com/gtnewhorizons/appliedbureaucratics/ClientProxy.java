@@ -12,6 +12,9 @@ public class ClientProxy extends CommonProxy {
 
     @Override
     public void registerRenderers() {
+        cpw.mods.fml.client.registry.ClientRegistry.bindTileEntitySpecialRenderer(
+            com.gtnewhorizons.appliedbureaucratics.facility.singularity.TileSingularityCore.class,
+            new com.gtnewhorizons.appliedbureaucratics.client.RenderSingularityCore());
         RenderingRegistry.registerEntityRenderingHandler(EntityWorkstationMount.class, new Render() {
 
             @Override
