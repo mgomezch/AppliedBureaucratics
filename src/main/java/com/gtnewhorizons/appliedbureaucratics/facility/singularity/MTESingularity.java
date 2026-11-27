@@ -137,7 +137,7 @@ public class MTESingularity extends MTEComputeFacility<MTESingularity> implement
                     } else if (pylon && y > 0 && y < HEIGHT - 1) {
                         c = 'P';
                     } else if (cube) {
-                        c = '-';
+                        c = 'A';
                     }
                     if (y == 0 && dx == 0 && dz == -8) {
                         c = '~';
@@ -195,7 +195,8 @@ public class MTESingularity extends MTEComputeFacility<MTESingularity> implement
                         .buildAndChain(StructureUtility.ofBlock(ModBlocks.casing, Casing.CONTAINMENT.meta())))
                 .addElement('P', StructureUtility.ofBlock(ModBlocks.casing, Casing.CONTAINMENT.meta()))
                 .addElement(
-                    '-',
+                    // Not '-': StructureLib binds '-' to plain air in every shape that uses it.
+                    'A',
                     StructureUtility
                         .ofChain(StructureUtility.isAir(), StructureUtility.ofBlock(ModBlocks.singularityCore, 0)))
                 .build();
