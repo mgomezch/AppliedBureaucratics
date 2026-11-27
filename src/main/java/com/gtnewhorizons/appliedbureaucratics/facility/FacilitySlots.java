@@ -50,6 +50,7 @@ public final class FacilitySlots {
     private final List<DispatchMeter> meters = new ArrayList<>();
     private int wanted;
     private long filing;
+    private long jobCap = Long.MAX_VALUE;
     private double dispatchRate;
     private int busy;
     private @Nullable NBTTagList saved;
@@ -99,6 +100,11 @@ public final class FacilitySlots {
         this.filing = Math.max(0, bytes);
     }
 
+    /// The most Filing one job may hold, such as the Internet's without an executive's sign-off.
+    public void setJobCap(final long bytes) {
+        this.jobCap = Math.max(0, bytes);
+    }
+
     public void setDispatchRate(final double opsPerSecond) {
         this.dispatchRate = Math.max(0, opsPerSecond);
     }
@@ -128,7 +134,9 @@ public final class FacilitySlots {
         // A stock CPU with c co-processors dispatches (c + 1) / 4 operations a tick, 5 (c + 1) a second.
         final int coProcessors = (int) Math.max(0, Math.min(Integer.MAX_VALUE, Math.ceil(perSlot / 5 - 1)));
         for (final HostedCraftingCPUCluster cpu : this.cpus) {
-            cpu.setAvailableStorage(cpu.isBusy() ? cpu.getUsedStorage() + free : free);
+            cpu.setAvailableStorage(
+                cpu.isBusy() ? cpu.getUsedStorage() + Math.min(free, Math.max(0, this.jobCap - cpu.getUsedStorage()))
+                    : Math.min(free, this.jobCap));
             cpu.setCoProcessors(coProcessors);
         }
     }

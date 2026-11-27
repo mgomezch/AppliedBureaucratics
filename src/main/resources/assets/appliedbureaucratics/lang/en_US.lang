@@ -101,3 +101,7 @@ item.appliedbureaucratics.converged_model_weights.name=Converged Model Weights
 item.appliedbureaucratics.converged_model_weights.tooltip=The model is very confident.
 item.appliedbureaucratics.paperclip.name=Paperclip
 item.appliedbureaucratics.paperclip.tooltip=It would like some more.
+tile.appliedbureaucratics.router_port.name=Router Port
+tile.appliedbureaucratics.router_port.tooltip=Part of the Internet's wall. Its OC network links one Mainframe.
+tile.appliedbureaucratics.gig_kiosk.name=Gig Kiosk
+tile.appliedbureaucratics.gig_kiosk.tooltip=Be your own boss.\nEnrols the villagers within 16 blocks for an Internet within 32. They agreed to the Terms of Service by standing there.

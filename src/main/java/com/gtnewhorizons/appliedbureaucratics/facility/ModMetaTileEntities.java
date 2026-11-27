@@ -2,6 +2,7 @@ package com.gtnewhorizons.appliedbureaucratics.facility;
 
 import net.minecraft.item.ItemStack;
 
+import com.gtnewhorizons.appliedbureaucratics.facility.internet.MTEInternet;
 import com.gtnewhorizons.appliedbureaucratics.facility.mainframe.MTEMainframe;
 
 /// Our GregTech machines. IDs 32200 to 32249 are ours: GT5U leaves 32053 to 32736 free, and ModularNuclear uses
@@ -14,10 +15,12 @@ public final class ModMetaTileEntities {
     public static final int ID_SINGULARITY = 32203;
 
     public static ItemStack mainframe;
+    public static ItemStack internet;
 
     private ModMetaTileEntities() {}
 
     public static void init() {
         mainframe = new MTEMainframe(ID_MAINFRAME, "multimachine.ab.mainframe", "Mainframe").getStackForm(1);
+        internet = new MTEInternet(ID_INTERNET, "multimachine.ab.internet", "The Internet").getStackForm(1);
     }
 }

@@ -7,8 +7,6 @@ import static gregtech.api.enums.HatchElement.OutputBus;
 import static gregtech.api.util.GTStructureUtility.buildHatchAdder;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -43,33 +41,21 @@ import com.gtnewhorizons.appliedbureaucratics.config.ABConfig;
 import com.gtnewhorizons.appliedbureaucratics.config.ItemList;
 import com.gtnewhorizons.appliedbureaucratics.facility.Amenities;
 import com.gtnewhorizons.appliedbureaucratics.facility.Bottleneck;
-import com.gtnewhorizons.appliedbureaucratics.facility.FacilitySlots;
-import com.gtnewhorizons.appliedbureaucratics.facility.IComputeFacility;
+import com.gtnewhorizons.appliedbureaucratics.facility.MTEComputeFacility;
 import com.gtnewhorizons.appliedbureaucratics.facility.ManagerUpkeep;
 import com.gtnewhorizons.appliedbureaucratics.facility.Workstations;
 import com.gtnewhorizons.appliedbureaucratics.facility.breakroom.TileBreakRoomCounter;
-import com.gtnewhorizons.appliedbureaucratics.integration.ae2.IComputeGrid;
-import com.gtnewhorizons.appliedbureaucratics.integration.bibliocraft.Furniture;
+import com.gtnewhorizons.appliedbureaucratics.facility.internet.MTEInternet;
 import com.gtnewhorizons.appliedbureaucratics.item.ItemComponent;
 import com.gtnewhorizons.appliedbureaucratics.workforce.Employment;
 import com.gtnewhorizons.appliedbureaucratics.workforce.ManagerKind;
 
-import appeng.api.networking.GridFlags;
-import appeng.api.networking.IGrid;
-import appeng.api.networking.IGridNode;
-import appeng.api.util.AECableType;
-import appeng.api.util.DimensionalCoord;
-import appeng.api.util.WorldCoord;
 import appeng.me.cluster.implementations.HostedCraftingCPUCluster;
-import appeng.me.cluster.implementations.ICraftingCPUHost;
-import appeng.me.helpers.AENetworkProxy;
-import appeng.me.helpers.IGridProxyable;
 import cpw.mods.fml.common.registry.GameRegistry;
 import gregtech.api.enums.Textures;
 import gregtech.api.interfaces.ITexture;
 import gregtech.api.interfaces.tileentity.IGregTechTileEntity;
 import gregtech.api.metatileentity.MetaTileEntity;
-import gregtech.api.metatileentity.implementations.MTEEnhancedMultiBlockBase;
 import gregtech.api.recipe.check.CheckRecipeResult;
 import gregtech.api.recipe.check.CheckRecipeResultRegistry;
 import gregtech.api.render.TextureFactory;
@@ -106,8 +92,7 @@ Wrinkles:
 */
 
 /// The Mainframe. See Note [The Mainframe].
-public class MTEMainframe extends MTEEnhancedMultiBlockBase<MTEMainframe>
-    implements ISurvivalConstructable, IGridProxyable, ICraftingCPUHost, IComputeFacility {
+public class MTEMainframe extends MTEComputeFacility<MTEMainframe> implements ISurvivalConstructable {
 
     private static final String MAIN = "main";
     private static IStructureDefinition<MTEMainframe> STRUCTURE;
@@ -119,8 +104,6 @@ public class MTEMainframe extends MTEEnhancedMultiBlockBase<MTEMainframe>
     private static final int EU_WORKING = 1920;
     private static final int EU_IDLE = 480;
 
-    private @Nullable AENetworkProxy proxy;
-    private final FacilitySlots slots = new FacilitySlots(this);
     private final Morale morale = new Morale();
     private final Payroll payroll = new Payroll();
     private final ManagerUpkeep upkeep = new ManagerUpkeep();
@@ -145,7 +128,9 @@ public class MTEMainframe extends MTEEnhancedMultiBlockBase<MTEMainframe>
     private boolean party;
     private FacilityOutput output = FacilityOutput.OFF;
     private Bottleneck bottleneck = Bottleneck.NO_STRUCTURE;
-    private int ticks;
+    /// The Internet this Mainframe is linked to, and when it last said so. See Note [The Internet].
+    private @Nullable MTEInternet link;
+    private long linkedAt = -1000;
 
     public MTEMainframe(final int id, final String name, final String regionalName) {
         super(id, name, regionalName);
@@ -241,6 +226,7 @@ public class MTEMainframe extends MTEEnhancedMultiBlockBase<MTEMainframe>
     private boolean addConcentrator(final @Nullable TileEntity tile) {
         if (tile instanceof TileTerminalConcentrator c && this.concentrator == null) {
             this.concentrator = c;
+            c.setOwner(this);
             return true;
         }
         return false;
@@ -294,27 +280,11 @@ public class MTEMainframe extends MTEEnhancedMultiBlockBase<MTEMainframe>
         return CheckRecipeResultRegistry.SUCCESSFUL;
     }
 
-    @Override
-    public boolean supportsVoidProtection() {
-        return false;
-    }
-
     // The facility.
 
     @Override
-    public void onPostTick(final IGregTechTileEntity tile, final long tick) {
-        super.onPostTick(tile, tick);
-        if (!tile.isServerSide()) {
-            return;
-        }
-        final AENetworkProxy proxy = this.getProxy();
-        if (!proxy.isReady()) {
-            proxy.onReady();
-        }
-        final IGridNode node = proxy.getNode();
-        if (this.slots.hasSavedJobs() && node != null && node.getGrid() != null) {
-            this.slots.restore();
-        }
+    protected void facilityTick() {
+        this.slots.setSlotCount(this.isLinked() ? 0 : 1);
         if (this.ticks % 100 == 0 && this.mMachine) {
             this.surveyOffice();
         }
@@ -325,13 +295,35 @@ public class MTEMainframe extends MTEEnhancedMultiBlockBase<MTEMainframe>
             this.morale.drift(this.moraleTarget(), 1, this.butcher ? 0.5 : 1);
             this.upkeep.tick(1200, this::takeFromInputs);
         }
-        this.ticks++;
-        this.slots.tick();
     }
 
-    private boolean isRunning() {
-        final IGregTechTileEntity tile = this.getBaseMetaTileEntity();
-        return this.mMachine && tile.isActive();
+    /// Links this Mainframe to `internet` until it stops saying so: its job slot is replaced by the Internet's and
+    /// its planning goes through it. See Note [The Internet].
+    public void linkTo(final MTEInternet internet) {
+        this.link = internet;
+        this.linkedAt = this.world()
+            .getTotalWorldTime();
+    }
+
+    public boolean isLinked() {
+        return this.link != null && this.world() != null
+            && this.world()
+                .getTotalWorldTime() - this.linkedAt < 60;
+    }
+
+    /// What the office produces, whether or not it is linked.
+    public FacilityOutput getOutput() {
+        return this.output;
+    }
+
+    public long getFiling() {
+        return this.filing;
+    }
+
+    @Override
+    protected double planningShare() {
+        final MTEInternet internet = this.link;
+        return this.isLinked() && internet != null ? internet.planningShareForMembers() : super.planningShare();
     }
 
     private void surveyOffice() {
@@ -433,21 +425,6 @@ public class MTEMainframe extends MTEEnhancedMultiBlockBase<MTEMainframe>
         this.butcher = hasButcher;
     }
 
-    private static boolean isManagerOffice(final World world, final Workstations.Seated seated) {
-        boolean desk = false;
-        boolean bell = false;
-        for (int dx = -1; dx <= 1; dx++) {
-            for (int dy = -1; dy <= 1; dy++) {
-                for (int dz = -1; dz <= 1; dz++) {
-                    final Block block = world.getBlock(seated.x() + dx, seated.y() + dy, seated.z() + dz);
-                    desk |= Furniture.DESK.matches(block);
-                    bell |= Furniture.BELL.matches(block);
-                }
-            }
-        }
-        return desk && bell;
-    }
-
     private void recompute() {
         final World world = this.getBaseMetaTileEntity()
             .getWorld();
@@ -526,14 +503,6 @@ public class MTEMainframe extends MTEEnhancedMultiBlockBase<MTEMainframe>
             .getRedstone();
     }
 
-    private double planningShare() {
-        if (!this.slots.anyBusy()) {
-            return 1;
-        }
-        final IComputeGrid compute = this.computeGrid();
-        return compute != null && compute.hasPlansInProgress() ? 0.25 : 0;
-    }
-
     private double moraleTarget() {
         return new MoraleTarget(
             this.payroll.isPaid(),
@@ -550,25 +519,6 @@ public class MTEMainframe extends MTEEnhancedMultiBlockBase<MTEMainframe>
                     .getZCoord()),
             this.managerPenalty,
             this.isCrunching()).value();
-    }
-
-    /// Takes up to `count` of the items matching `what` from the input buses, and says how many it took.
-    private int takeFromInputs(final java.util.function.Predicate<ItemStack> what, final int count) {
-        int taken = 0;
-        for (final ItemStack stack : this.getStoredInputs()) {
-            if (taken >= count) {
-                break;
-            }
-            if (stack != null && what.test(stack)) {
-                final int n = Math.min(count - taken, stack.stackSize);
-                final ItemStack toTake = stack.copy();
-                toTake.stackSize = n;
-                if (this.depleteInput(toTake)) {
-                    taken += n;
-                }
-            }
-        }
-        return taken;
     }
 
     private void payWages() {
@@ -623,16 +573,10 @@ public class MTEMainframe extends MTEEnhancedMultiBlockBase<MTEMainframe>
         this.concentrator.show(lines);
     }
 
-    private @Nullable IComputeGrid computeGrid() {
-        final IGridNode node = this.getProxy()
-            .getNode();
-        final IGrid grid = node != null ? node.getGrid() : null;
-        return grid != null ? grid.getCache(IComputeGrid.class) : null;
-    }
-
+    /// A linked Mainframe plans through its Internet, which reports the planning instead.
     @Override
     public double getPlanningRate() {
-        return this.output.planningRate();
+        return this.isLinked() ? 0 : this.output.planningRate();
     }
 
     @Override
@@ -684,30 +628,6 @@ public class MTEMainframe extends MTEEnhancedMultiBlockBase<MTEMainframe>
         return lines.toArray(new String[0]);
     }
 
-    // ICraftingCPUHost.
-
-    @Override
-    public Collection<? extends HostedCraftingCPUCluster> getHostedCPUs() {
-        return this.slots.getCPUs();
-    }
-
-    @Override
-    public World getHostWorld() {
-        return this.getBaseMetaTileEntity()
-            .getWorld();
-    }
-
-    @Override
-    public WorldCoord getHostLocation() {
-        final IGregTechTileEntity tile = this.getBaseMetaTileEntity();
-        return new WorldCoord(tile.getXCoord(), tile.getYCoord(), tile.getZCoord());
-    }
-
-    @Override
-    public int grantOperations(final HostedCraftingCPUCluster cpu) {
-        return this.slots.grant(cpu);
-    }
-
     @Override
     public void operationsUsed(final HostedCraftingCPUCluster cpu, final int used) {
         this.opsSinceLog += used;
@@ -720,64 +640,8 @@ public class MTEMainframe extends MTEEnhancedMultiBlockBase<MTEMainframe>
     }
 
     @Override
-    public void markHostDirty() {
-        this.markDirty();
-    }
-
-    @Override
     public @Nullable String getHostedCPUName(final HostedCraftingCPUCluster cpu) {
         return "Big Iron";
-    }
-
-    @Override
-    public void onRemoval() {
-        this.slots.dispose();
-        super.onRemoval();
-    }
-
-    // The ME node.
-
-    @Override
-    public AENetworkProxy getProxy() {
-        if (this.proxy == null) {
-            this.proxy = new AENetworkProxy(this, "proxy", this.getStackForm(1), true);
-            this.proxy.setFlags(GridFlags.REQUIRE_CHANNEL);
-            this.proxy.setIdlePowerUsage(4);
-            this.proxy.setValidSides(EnumSet.complementOf(EnumSet.of(ForgeDirection.UNKNOWN)));
-        }
-        return this.proxy;
-    }
-
-    @Override
-    public DimensionalCoord getLocation() {
-        final IGregTechTileEntity tile = this.getBaseMetaTileEntity();
-        return new DimensionalCoord(tile.getWorld(), tile.getXCoord(), tile.getYCoord(), tile.getZCoord());
-    }
-
-    @Override
-    public void gridChanged() {}
-
-    @Override
-    public IGridNode getGridNode(final ForgeDirection dir) {
-        return this.getProxy()
-            .getNode();
-    }
-
-    @Override
-    public AECableType getCableConnectionType(final ForgeDirection dir) {
-        return AECableType.SMART;
-    }
-
-    @Override
-    public void securityBreak() {
-        this.getBaseMetaTileEntity()
-            .disableWorking();
-    }
-
-    @Override
-    public IGridNode getActionableNode() {
-        return this.getProxy()
-            .getNode();
     }
 
     // Saving.
@@ -785,11 +649,6 @@ public class MTEMainframe extends MTEEnhancedMultiBlockBase<MTEMainframe>
     @Override
     public void saveNBTData(final NBTTagCompound tag) {
         super.saveNBTData(tag);
-        final NBTTagCompound proxyTag = new NBTTagCompound();
-        this.getProxy()
-            .writeToNBT(proxyTag);
-        tag.setTag("proxy", proxyTag);
-        this.slots.writeToNBT(tag);
         tag.setDouble("morale", this.morale.get());
         tag.setLong("wageTicks", this.payroll.getWorkerTicks());
         tag.setLong("wagesOwed", this.payroll.getOwed());
@@ -802,11 +661,6 @@ public class MTEMainframe extends MTEEnhancedMultiBlockBase<MTEMainframe>
     @Override
     public void loadNBTData(final NBTTagCompound tag) {
         super.loadNBTData(tag);
-        if (tag.hasKey("proxy")) {
-            this.getProxy()
-                .readFromNBT(tag.getCompoundTag("proxy"));
-        }
-        this.slots.readFromNBT(tag);
         this.morale.set(tag.hasKey("morale") ? tag.getDouble("morale") : Morale.START);
         this.payroll.load(tag.getLong("wageTicks"), tag.getLong("wagesOwed"), tag.getLong("wagesPrepaid"));
         this.sheetsOwed = tag.getDouble("sheetsOwed");

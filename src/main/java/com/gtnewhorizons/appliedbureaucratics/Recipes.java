@@ -90,6 +90,42 @@ final class Recipes {
             new Object[] { "CPC", "LHL", "CTC", 'C', OrePrefixes.circuit.get(Materials.EV), 'P', engineering, 'L',
                 logic, 'H', ItemList.Hull_EV, 'T', ItemComponent.Kind.TAPE_REEL.stack(1) });
         GTModHandler.addCraftingRecipe(
+            new ItemStack(ModBlocks.casing, 2, Casing.TUBE.meta()),
+            bits,
+            new Object[] { "GPG", "PFP", "GPG", 'G', "blockGlass", 'P', OrePrefixes.plate.get(Materials.StainlessSteel),
+                'F', OrePrefixes.frameGt.get(Materials.StainlessSteel) });
+        GTModHandler.addCraftingRecipe(
+            new ItemStack(ModBlocks.casing, 1, Casing.BACKBONE.meta()),
+            bits,
+            new Object[] { "WCW", "CFC", "WCW", 'W', OrePrefixes.wireGt04.get(Materials.Platinum), 'C',
+                OrePrefixes.circuit.get(Materials.IV), 'F', new ItemStack(ModBlocks.casing, 1, Casing.TUBE.meta()) });
+        GTModHandler.addCraftingRecipe(
+            new ItemStack(ModBlocks.casing, 1, Casing.DISH.meta()),
+            bits,
+            new Object[] { "PPP", " S ", " C ", 'P', OrePrefixes.plate.get(Materials.Aluminium), 'S',
+                ItemList.Sensor_IV, 'C', new ItemStack(ModBlocks.casing, 1, Casing.TUBE.meta()) });
+        GTModHandler.addCraftingRecipe(
+            new ItemStack(ModBlocks.routerPort),
+            bits,
+            new Object[] { "CEC", "ETE", "CEC", 'C', OrePrefixes.cableGt01.get(Materials.Platinum), 'E',
+                ItemList.Emitter_IV, 'T', new ItemStack(ModBlocks.casing, 1, Casing.TUBE.meta()) });
+        GTModHandler.addCraftingRecipe(
+            new ItemStack(ModBlocks.gigKiosk),
+            bits,
+            new Object[] { "SPS", "PCP", "SPS", 'S', ItemList.Sensor_HV, 'P',
+                OrePrefixes.plate.get(Materials.Polyethylene), 'C', OrePrefixes.circuit.get(Materials.HV) });
+        GTModHandler.addCraftingRecipe(
+            ModMetaTileEntities.internet,
+            bits,
+            new Object[] { "CBC", "EHE", "CBC", 'C', OrePrefixes.circuit.get(Materials.IV), 'B',
+                new ItemStack(ModBlocks.casing, 1, Casing.BACKBONE.meta()), 'E', ItemList.Emitter_IV, 'H',
+                ItemList.Hull_IV });
+        GTModHandler.addCraftingRecipe(
+            ItemComponent.Kind.DISK_ARRAY.stack(1),
+            bits,
+            new Object[] { "HHH", "HCH", "HHH", 'H', ItemComponent.Kind.HIGH_DENSITY_TAPE_REEL.stack(1), 'C',
+                OrePrefixes.circuit.get(Materials.IV) });
+        GTModHandler.addCraftingRecipe(
             ItemComponent.Kind.TAPE_REEL.stack(2),
             bits,
             new Object[] { "PSP", "SMS", "PSP", 'P', OrePrefixes.plate.get(Materials.Polyethylene), 'S',

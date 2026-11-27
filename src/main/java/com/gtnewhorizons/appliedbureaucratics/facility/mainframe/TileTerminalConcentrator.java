@@ -35,6 +35,7 @@ public class TileTerminalConcentrator extends TileEntity implements Environment 
     private static boolean hostMethodLooked;
 
     private @Nullable Node node;
+    private @Nullable MTEMainframe owner;
     private boolean joined;
     private boolean powered;
     private int ticks;
@@ -50,6 +51,15 @@ public class TileTerminalConcentrator extends TileEntity implements Environment 
         } catch (RuntimeException | LinkageError e) {
             this.node = null;
         }
+    }
+
+    /// The Mainframe whose structure holds this concentrator, set at each structure check.
+    public @Nullable MTEMainframe getOwner() {
+        return this.owner != null && this.owner.isFormed() ? this.owner : null;
+    }
+
+    public void setOwner(final @Nullable MTEMainframe owner) {
+        this.owner = owner;
     }
 
     public List<Terminal> getTerminals() {

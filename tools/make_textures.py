@@ -231,6 +231,16 @@ def main():
     }.items():
         png(f"{OUT}/blocks/casing_{name}.png", art)
     png(f"{OUT}/blocks/terminal_concentrator.png", concentrator())
+    port = casing((90, 100, 110, 255), (60, 65, 70, 255), (130, 140, 150, 255))
+    for x in (4, 7, 10):
+        rect(port, x, 6, x + 1, 9, (20, 20, 25, 255))
+        port[5][x] = [60, 255, 90, 255]
+    png(f"{OUT}/blocks/router_port.png", port)
+    kiosk = casing((230, 120, 40, 255), (170, 80, 20, 255), (255, 170, 90, 255))
+    rect(kiosk, 3, 3, 12, 8, (30, 30, 40, 255))
+    rect(kiosk, 4, 4, 11, 5, (255, 255, 255, 255))
+    rect(kiosk, 6, 10, 9, 12, (255, 230, 120, 255))
+    png(f"{OUT}/blocks/gig_kiosk.png", kiosk)
     png(f"{OUT}/blocks/OVERLAY_FRONT_MAINFRAME.png", screen_overlay(False))
     png(f"{OUT}/blocks/OVERLAY_FRONT_MAINFRAME_ACTIVE.png", screen_overlay(True))
     png(f"{OUT}/items/tape_reel.png", reel((60, 50, 40, 255), (200, 200, 200, 255)))
