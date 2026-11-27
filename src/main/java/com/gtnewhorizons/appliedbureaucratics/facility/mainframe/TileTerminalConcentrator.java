@@ -11,6 +11,7 @@ import net.minecraft.tileentity.TileEntity;
 import org.jspecify.annotations.Nullable;
 
 import com.gtnewhorizons.appliedbureaucratics.AppliedBureaucratics;
+import com.gtnewhorizons.appliedbureaucratics.integration.oc.TileDockingPad;
 
 import li.cil.oc.api.Network;
 import li.cil.oc.api.internal.TextBuffer;
@@ -40,6 +41,7 @@ public class TileTerminalConcentrator extends TileEntity implements Environment 
     private boolean powered;
     private int ticks;
     private List<Terminal> terminals = Collections.emptyList();
+    private List<TileDockingPad> pads = Collections.emptyList();
     private List<String> screen = Collections.emptyList();
     private boolean screenChanged;
 
@@ -64,6 +66,11 @@ public class TileTerminalConcentrator extends TileEntity implements Environment 
 
     public List<Terminal> getTerminals() {
         return this.terminals;
+    }
+
+    /// The Docking Pads on this concentrator's network. See Note [Robots].
+    public List<TileDockingPad> getDockingPads() {
+        return this.pads;
     }
 
     /// Whether the Mainframe this belongs to is running, so the concentrator powers its network.
@@ -104,11 +111,17 @@ public class TileTerminalConcentrator extends TileEntity implements Environment 
 
     private List<Terminal> scan() {
         final List<Terminal> found = new ArrayList<>();
+        final List<TileDockingPad> pads = new ArrayList<>();
+        this.pads = pads;
         if (this.node == null || this.node.network() == null) {
             return found;
         }
         for (final Node other : this.node.network()
             .nodes()) {
+            if (other.host() instanceof TileDockingPad pad) {
+                pads.add(pad);
+                continue;
+            }
             if (found.size() >= MAX_TERMINALS) {
                 break;
             }

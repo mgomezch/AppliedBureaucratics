@@ -113,6 +113,9 @@ public class MTEMainframe extends MTEComputeFacility<MTEMainframe> implements IS
     private double hardwareFte;
     private int servers;
     private int terminals;
+    private int robots;
+    private double botnetFactor = 0.5;
+    private static final int MAX_SEATS = 32;
     private int workers;
     private OrgChart.Result org = new OrgChart.Result(new ArrayList<>(), 0, 0, 0, 0);
     private int amenities;
@@ -355,6 +358,9 @@ public class MTEMainframe extends MTEComputeFacility<MTEMainframe> implements IS
             ? this.concentrator.getTerminals()
             : new ArrayList<>();
         for (final TileTerminalConcentrator.Terminal screen : screens) {
+            if (staff.size() >= MAX_SEATS) {
+                break;
+            }
             Workstations.Seated best = null;
             for (final Workstations.Seated seated : Workstations
                 .within(world, screen.x() + 0.5, screen.y() + 0.5, screen.z() + 0.5, 2.5)) {
@@ -415,8 +421,47 @@ public class MTEMainframe extends MTEComputeFacility<MTEMainframe> implements IS
         for (final ManagerKind kind : present) {
             penalty += kind.moralePenalty;
         }
+        // Robots, on a Mainframe linked to an Internet. See Note [Robots].
+        double botFte = 0;
+        int robots = 0;
+        int captcha = 0;
+        if (this.isLinked() && this.concentrator != null) {
+            for (final com.gtnewhorizons.appliedbureaucratics.integration.oc.TileDockingPad pad : this.concentrator
+                .getDockingPads()) {
+                if (staff.size() + robots >= MAX_SEATS) {
+                    break;
+                }
+                final li.cil.oc.api.internal.Robot robot = com.gtnewhorizons.appliedbureaucratics.integration.oc.OCIntegration
+                    .workingRobotOn(world, pad.xCoord, pad.yCoord, pad.zCoord);
+                if (robot != null) {
+                    robots++;
+                    botFte += switch (robot.tier()) {
+                        case 0 -> 1.5;
+                        case 1 -> 2.0;
+                        default -> 3.0;
+                    };
+                }
+                for (final Workstations.Seated seated : Workstations
+                    .within(world, pad.xCoord + 0.5, pad.yCoord + 0.5, pad.zCoord + 0.5, 2.5)) {
+                    if (seated.employment()
+                        .getRole() == Employment.Role.WORKER && !counted.contains(seated)) {
+                        counted.add(seated);
+                        captcha++;
+                    }
+                }
+            }
+        }
+        this.robots = robots;
+        this.botnetFactor = Math.min(1.0, 0.5 + 0.0625 * captcha);
         this.upkeep.setManagers(kinds);
-        this.org = OrgChart.build(staff, managers, 2);
+        final OrgChart.Result chart = OrgChart.build(staff, managers, 2);
+        final List<OrgUnit> roots = new ArrayList<>(chart.roots());
+        if (botFte > 0) {
+            roots.add(
+                OrgUnit
+                    .worker(botFte * this.botnetFactor, com.gtnewhorizons.appliedbureaucratics.compute.Affinity.NONE));
+        }
+        this.org = new OrgChart.Result(roots, chart.leads(), chart.directors(), chart.executives(), chart.unmanaged());
         this.terminals = screens.size();
         this.workers = staff.size();
         this.amenities = staff.isEmpty() ? 0 : amenitySum / staff.size();
@@ -608,7 +653,7 @@ public class MTEMainframe extends MTEComputeFacility<MTEMainframe> implements IS
         lines.add(
             String.format(
                 java.util.Locale.ROOT,
-                "  office: %d terminals, %d workers, %d leads, %d directors, %d unmanaged, hardware %.0f FTE, fte %.2f, racks %d servers %d",
+                "  office: %d terminals, %d workers, %d leads, %d directors, %d unmanaged, hardware %.0f FTE, fte %.2f, racks %d servers %d, robots %d botnet x%.3f",
                 this.terminals,
                 this.workers,
                 this.org.leads(),
@@ -617,7 +662,9 @@ public class MTEMainframe extends MTEComputeFacility<MTEMainframe> implements IS
                 this.hardwareFte,
                 OrgUnit.facilityFte(this.org.roots()),
                 this.racks.size(),
-                this.servers));
+                this.servers,
+                this.robots,
+                this.botnetFactor));
         return lines;
     }
 

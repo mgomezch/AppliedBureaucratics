@@ -15,6 +15,7 @@ import com.gtnewhorizons.appliedbureaucratics.integration.ae2.ComputeGridCache;
 import com.gtnewhorizons.appliedbureaucratics.integration.ae2.ComputePolicy;
 import com.gtnewhorizons.appliedbureaucratics.integration.ae2.IComputeGrid;
 import com.gtnewhorizons.appliedbureaucratics.integration.bibliocraft.Furniture;
+import com.gtnewhorizons.appliedbureaucratics.integration.oc.OCIntegration;
 import com.gtnewhorizons.appliedbureaucratics.item.ModItems;
 import com.gtnewhorizons.appliedbureaucratics.workforce.EntityWorkstationMount;
 import com.gtnewhorizons.appliedbureaucratics.workforce.ManagerKind;
@@ -35,7 +36,7 @@ import cpw.mods.fml.common.registry.EntityRegistry;
     modid = AppliedBureaucratics.MODID,
     name = AppliedBureaucratics.MODNAME,
     version = Tags.VERSION,
-    dependencies = "required-after:appliedenergistics2;required-after:gregtech;after:OpenComputers;after:BiblioCraft;after:AWWayofTime;after:Thaumcraft")
+    dependencies = "required-after:appliedenergistics2;required-after:gregtech;required-after:OpenComputers;after:BiblioCraft;after:AWWayofTime;after:Thaumcraft")
 public class AppliedBureaucratics {
 
     public static final String MODID = "appliedbureaucratics";
@@ -67,6 +68,7 @@ public class AppliedBureaucratics {
         ModMetaTileEntities.init();
         NetworkRegistry.INSTANCE.registerGuiHandler(this, new GuiHandler());
         MinecraftForge.EVENT_BUS.register(new WorkforceEvents());
+        OCIntegration.init();
         proxy.registerRenderers();
         if (ABConfig.enableComputeRequirement) {
             CraftingComputePolicies.register(new ComputePolicy());

@@ -8,6 +8,7 @@ import com.gtnewhorizons.appliedbureaucratics.facility.desk.TileRequisitionTray;
 import com.gtnewhorizons.appliedbureaucratics.facility.internet.TileGigKiosk;
 import com.gtnewhorizons.appliedbureaucratics.facility.internet.TileRouterPort;
 import com.gtnewhorizons.appliedbureaucratics.facility.mainframe.TileTerminalConcentrator;
+import com.gtnewhorizons.appliedbureaucratics.integration.oc.TileDockingPad;
 
 import cpw.mods.fml.common.registry.GameRegistry;
 
@@ -19,6 +20,7 @@ public final class ModBlocks {
     public static Block terminalConcentrator;
     public static Block routerPort;
     public static Block gigKiosk;
+    public static Block dockingPad;
 
     private ModBlocks() {}
 
@@ -40,5 +42,8 @@ public final class ModBlocks {
         gigKiosk = new BlockSimpleTile("gig_kiosk", Material.iron, TileGigKiosk::new);
         GameRegistry.registerBlock(gigKiosk, "gig_kiosk");
         GameRegistry.registerTileEntity(TileGigKiosk.class, "appliedbureaucratics:gig_kiosk");
+        dockingPad = new BlockSimpleTile("docking_pad", Material.iron, TileDockingPad::new);
+        GameRegistry.registerBlock(dockingPad, "docking_pad");
+        GameRegistry.registerTileEntity(TileDockingPad.class, "appliedbureaucratics:docking_pad");
     }
 }

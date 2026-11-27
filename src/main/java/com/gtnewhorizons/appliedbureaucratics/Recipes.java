@@ -121,6 +121,16 @@ final class Recipes {
                 new ItemStack(ModBlocks.casing, 1, Casing.BACKBONE.meta()), 'E', ItemList.Emitter_IV, 'H',
                 ItemList.Hull_IV });
         GTModHandler.addCraftingRecipe(
+            new ItemStack(ModItems.requisitionUpgrade),
+            bits,
+            new Object[] { "CPC", "RER", "CPC", 'C', OrePrefixes.circuit.get(Materials.EV), 'P', engineering, 'R',
+                ItemList.Robot_Arm_EV, 'E', new ItemStack(Items.emerald) });
+        GTModHandler.addCraftingRecipe(
+            new ItemStack(ModBlocks.dockingPad),
+            bits,
+            new Object[] { "PPP", "RMR", 'P', OrePrefixes.plate.get(Materials.StainlessSteel), 'R',
+                ItemList.Robot_Arm_EV, 'M', new ItemStack(ModBlocks.casing, 1, Casing.MAINFRAME.meta()) });
+        GTModHandler.addCraftingRecipe(
             ItemComponent.Kind.DISK_ARRAY.stack(1),
             bits,
             new Object[] { "HHH", "HCH", "HHH", 'H', ItemComponent.Kind.HIGH_DENSITY_TAPE_REEL.stack(1), 'C',

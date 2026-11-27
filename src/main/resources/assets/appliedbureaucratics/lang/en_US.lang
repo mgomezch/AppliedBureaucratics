@@ -105,3 +105,7 @@ tile.appliedbureaucratics.router_port.name=Router Port
 tile.appliedbureaucratics.router_port.tooltip=Part of the Internet's wall. Its OC network links one Mainframe.
 tile.appliedbureaucratics.gig_kiosk.name=Gig Kiosk
 tile.appliedbureaucratics.gig_kiosk.tooltip=Be your own boss.\nEnrols the villagers within 16 blocks for an Internet within 32. They agreed to the Terms of Service by standing there.
+item.appliedbureaucratics.requisition_upgrade.name=Requisition Upgrade
+item.appliedbureaucratics.requisition_upgrade.tooltip=For OpenComputers robots. Stand on a Docking Pad and call work().\nThe workerd floppy does the rest.
+tile.appliedbureaucratics.docking_pad.name=Docking Pad
+tile.appliedbureaucratics.docking_pad.tooltip=On a linked Mainframe's terminal network. A robot on it with a Requisition Upgrade clocks in.
