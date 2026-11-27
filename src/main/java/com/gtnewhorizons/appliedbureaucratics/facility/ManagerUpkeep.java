@@ -19,7 +19,8 @@ import com.gtnewhorizons.appliedbureaucratics.workforce.ManagerKind;
 import com.mojang.authlib.GameProfile;
 
 /// What a facility's managers cost (design document, section 4.2): an ender pearl a day per Enderman, a gold ingot a
-/// day per Crimson Cleric, and 100 LP a minute per demon from its owner's soul network. An unpaid manager works at
+/// day per Crimson Cleric, a diamond a day per boss, and 100 LP a minute per demon from its owner's soul network. An
+/// unpaid manager works at
 /// efficiency 0.5.
 public final class ManagerUpkeep {
 
@@ -64,15 +65,19 @@ public final class ManagerUpkeep {
         this.ticks -= DAY;
         int endermen = 0;
         int clerics = 0;
+        int bosses = 0;
         for (final Upkept manager : this.managers) {
             if (manager.kind() == ManagerKind.ENDERMAN) {
                 endermen++;
             } else if (manager.kind() == ManagerKind.CLERIC) {
                 clerics++;
+            } else if (manager.kind() == ManagerKind.BOSS) {
+                bosses++;
             }
         }
         this.paid.put(ManagerKind.ENDERMAN, taker.take(s -> s.getItem() == Items.ender_pearl, endermen) == endermen);
         this.paid.put(ManagerKind.CLERIC, taker.take(s -> s.getItem() == Items.gold_ingot, clerics) == clerics);
+        this.paid.put(ManagerKind.BOSS, taker.take(s -> s.getItem() == Items.diamond, bosses) == bosses);
     }
 
     /// Takes `lp` from the soul network of `owner` through Blood Magic's API, found by name once. Without Blood Magic

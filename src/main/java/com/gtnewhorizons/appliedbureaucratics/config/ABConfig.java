@@ -24,6 +24,12 @@ public final class ABConfig {
     public static double meteredClusterPlanningRate = 8;
     /// Contracted mobs on shift take no damage.
     public static boolean workersInvulnerable = true;
+    /// Bosses that show no boss bar but may direct.
+    public static String[] bossClasses = { "twilightforest.entity.boss.EntityTFNaga",
+        "twilightforest.entity.boss.EntityTFLich", "twilightforest.entity.boss.EntityTFMinoshroom",
+        "twilightforest.entity.boss.EntityTFHydra", "twilightforest.entity.boss.EntityTFKnightPhantom",
+        "twilightforest.entity.boss.EntityTFUrGhast", "twilightforest.entity.boss.EntityTFYetiAlpha",
+        "twilightforest.entity.boss.EntityTFSnowQueen" };
     /// How far a signed contract reaches for its worker.
     public static double assignRange = 32;
 
@@ -107,6 +113,8 @@ public final class ABConfig {
             .getBoolean();
         assignRange = c.get(workforce, "assignRange", assignRange, "How far a signed contract reaches.")
             .getDouble();
+        bossClasses = c.get(workforce, "bossClasses", bossClasses, "Mob classes that may be directors.")
+            .getStringList();
 
         final String desk = "desk";
         deskBytesPerBook = c.get(desk, "bytesPerBook", deskBytesPerBook, "Filing per book in a bookcase.")

@@ -7,25 +7,33 @@ import java.util.List;
 /// Builds a facility's organisation from where its people sit. See Note [The compute model] and the design
 /// document, section 4.2.
 ///
-/// Managers who can only lead are placed first, best first: each takes up to [ComputeSettings#maxReports] of the
-/// nearest unmanaged workers within [#LEAD_RANGE] blocks and becomes their team lead. Then each manager allowed to
-/// direct (level 2 or more), best first, takes as many of the nearest leads within [#DIRECTOR_RANGE] blocks if there
-/// are any and the facility allows directors, and otherwise leads workers itself. Managers still without reports who
-/// may be executives (level 3, where the facility allows them: the Internet's boardroom) take directors the same
-/// way. Everyone left over is a root of their own.
+/// Each manager has roles ([#LEAD], [#DIRECT], [#EXECUTE]). Team leads are placed first, best first: each takes up to
+/// [ComputeSettings#maxReports] of the nearest unmanaged workers within [#LEAD_RANGE] blocks. Directors then take up to
+/// as many of the nearest leads within [#DIRECTOR_RANGE] blocks, where the facility allows directors. Executives,
+/// where the facility allows them (the Internet's boardroom), take directors the same way; an executive with no
+/// directors to take leads workers instead, if it can. Everyone left over is a root of their own, and managers with
+/// nobody to manage do nothing.
 public final class OrgChart {
 
     public static final double LEAD_RANGE = 12;
     public static final double DIRECTOR_RANGE = 24;
 
+    public static final int LEAD = 1;
+    public static final int DIRECT = 2;
+    public static final int EXECUTE = 4;
+
     public record Worker(double x, double y, double z, double fte, Affinity affinity) {}
 
-    /// @param level 1 lead only, 2 also director, 3 also executive
+    /// @param roles bits of [#LEAD], [#DIRECT] and [#EXECUTE]
     /// @param paid an unpaid manager works at efficiency 0.5
-    public record Manager(double x, double y, double z, double efficiency, int level, boolean paid) {
+    public record Manager(double x, double y, double z, double efficiency, int roles, boolean paid) {
 
         double effective() {
             return this.paid ? this.efficiency : 0.5;
+        }
+
+        boolean can(final int role) {
+            return (this.roles & role) != 0;
         }
     }
 
@@ -48,54 +56,70 @@ public final class OrgChart {
     public static Result build(final List<Worker> workers, final List<Manager> managers, final int maxLevel) {
         final int maxReports = ComputeSettings.get().maxReports;
         final List<Manager> ordered = new ArrayList<>(managers);
-        // Lead-only managers first, then the rest, best first within each.
-        ordered.sort(
-            Comparator.comparingInt((Manager m) -> m.level > 1 ? 1 : 0)
-                .thenComparingDouble(m -> -m.effective()));
+        ordered.sort(Comparator.comparingDouble(m -> -m.effective()));
         final List<Worker> free = new ArrayList<>(workers);
         final List<Unit> leads = new ArrayList<>();
-        final List<Unit> directors = new ArrayList<>();
-        final List<Manager> idle = new ArrayList<>();
+        final List<Manager> executives = new ArrayList<>();
         for (final Manager manager : ordered) {
-            if (manager.level >= 2 && maxLevel >= 2 && takeUnits(manager, leads, directors, maxReports)) {
-                continue;
-            }
-            free.sort(Comparator.comparingDouble(w -> distanceSq(w.x, w.y, w.z, manager.x, manager.y, manager.z)));
-            final List<OrgUnit> team = new ArrayList<>();
-            while (team.size() < maxReports && !free.isEmpty()
-                && distanceSq(free.get(0).x, free.get(0).y, free.get(0).z, manager.x, manager.y, manager.z)
-                    <= LEAD_RANGE * LEAD_RANGE) {
-                final Worker w = free.remove(0);
-                team.add(OrgUnit.worker(w.fte, w.affinity));
-            }
-            if (team.isEmpty()) {
-                idle.add(manager);
-            } else {
-                leads.add(new Unit(OrgUnit.manager(manager.effective(), team), manager.x, manager.y, manager.z));
+            if (manager.can(EXECUTE) && maxLevel >= 3) {
+                executives.add(manager);
+            } else if (manager.can(LEAD)) {
+                lead(manager, free, leads, maxReports);
             }
         }
-        final int leadCount = leads.size() + reportsOf(directors);
-        final List<Unit> executives = new ArrayList<>();
-        for (final Manager manager : idle) {
-            if (manager.level >= 3 && maxLevel >= 3) {
-                takeUnits(manager, directors, executives, maxReports);
+        final List<Unit> directors = new ArrayList<>();
+        if (maxLevel >= 2) {
+            for (final Manager manager : ordered) {
+                if (manager.can(DIRECT)) {
+                    takeUnits(manager, leads, directors, maxReports);
+                }
             }
         }
-        final int directorCount = directors.size() + reportsOf(executives);
+        final List<Unit> top = new ArrayList<>();
+        final List<Unit> lateLeads = new ArrayList<>();
+        for (final Manager manager : executives) {
+            if (!takeUnits(manager, directors, top, maxReports) && manager.can(LEAD)) {
+                lead(manager, free, lateLeads, maxReports);
+            }
+        }
+        final int leadCount = leads.size() + lateLeads.size() + reportsOf(directors) + reportsOfReports(top);
+        final int directorCount = directors.size() + reportsOf(top);
         final List<OrgUnit> roots = new ArrayList<>();
-        for (final Unit u : executives) {
-            roots.add(u.org);
-        }
-        for (final Unit u : directors) {
-            roots.add(u.org);
-        }
-        for (final Unit u : leads) {
-            roots.add(u.org);
+        for (final List<Unit> level : java.util.Arrays.asList(top, directors, leads, lateLeads)) {
+            for (final Unit u : level) {
+                roots.add(u.org);
+            }
         }
         for (final Worker w : free) {
             roots.add(OrgUnit.worker(w.fte, w.affinity));
         }
-        return new Result(roots, leadCount, directorCount, executives.size(), free.size());
+        return new Result(roots, leadCount, directorCount, top.size(), free.size());
+    }
+
+    private static void lead(final Manager manager, final List<Worker> free, final List<Unit> leads,
+        final int maxReports) {
+        free.sort(Comparator.comparingDouble(w -> distanceSq(w.x, w.y, w.z, manager.x, manager.y, manager.z)));
+        final List<OrgUnit> team = new ArrayList<>();
+        while (team.size() < maxReports && !free.isEmpty()
+            && distanceSq(free.get(0).x, free.get(0).y, free.get(0).z, manager.x, manager.y, manager.z)
+                <= LEAD_RANGE * LEAD_RANGE) {
+            final Worker w = free.remove(0);
+            team.add(OrgUnit.worker(w.fte, w.affinity));
+        }
+        if (!team.isEmpty()) {
+            leads.add(new Unit(OrgUnit.manager(manager.effective(), team), manager.x, manager.y, manager.z));
+        }
+    }
+
+    private static int reportsOfReports(final List<Unit> units) {
+        int n = 0;
+        for (final Unit u : units) {
+            for (final OrgUnit r : u.org.getReports()) {
+                n += r.getReports()
+                    .size();
+            }
+        }
+        return n;
     }
 
     private static int reportsOf(final List<Unit> units) {

@@ -34,8 +34,9 @@ class OrgChartTest {
     void twoEndermenLeadEightEach() {
         final List<OrgChart.Worker> workers = new ArrayList<>(row(8, 0, 0));
         workers.addAll(row(8, 0, 40));
-        final List<OrgChart.Manager> managers = Arrays
-            .asList(new OrgChart.Manager(4, 0, 2, 0.8, 1, true), new OrgChart.Manager(4, 0, 42, 0.8, 1, true));
+        final List<OrgChart.Manager> managers = Arrays.asList(
+            new OrgChart.Manager(4, 0, 2, 0.8, OrgChart.LEAD, true),
+            new OrgChart.Manager(4, 0, 42, 0.8, OrgChart.LEAD, true));
 
         final OrgChart.Result r = OrgChart.build(workers, managers, 2);
 
@@ -46,13 +47,13 @@ class OrgChartTest {
     }
 
     @Test
-    void aClericDirectsTwoLeads() {
+    void aBossDirectsTwoLeads() {
         final List<OrgChart.Worker> workers = new ArrayList<>(row(8, 0, 0));
         workers.addAll(row(8, 0, 20));
         final List<OrgChart.Manager> managers = Arrays.asList(
-            new OrgChart.Manager(4, 0, 2, 0.8, 1, true),
-            new OrgChart.Manager(4, 0, 22, 0.8, 1, true),
-            new OrgChart.Manager(4, 0, 11, 0.9, 2, true));
+            new OrgChart.Manager(4, 0, 2, 0.8, OrgChart.LEAD, true),
+            new OrgChart.Manager(4, 0, 22, 0.8, OrgChart.LEAD, true),
+            new OrgChart.Manager(4, 0, 11, 0.9, OrgChart.DIRECT, true));
 
         final OrgChart.Result r = OrgChart.build(workers, managers, 2);
 
@@ -67,16 +68,20 @@ class OrgChartTest {
 
     @Test
     void anUnpaidManagerWorksAtHalf() {
-        final OrgChart.Result r = OrgChart
-            .build(row(8, 0, 0), Collections.singletonList(new OrgChart.Manager(4, 0, 2, 1.0, 3, false)), 3);
+        final OrgChart.Result r = OrgChart.build(
+            row(8, 0, 0),
+            Collections.singletonList(new OrgChart.Manager(4, 0, 2, 1.0, OrgChart.LEAD | OrgChart.EXECUTE, false)),
+            3);
 
         assertEquals(4, OrgUnit.facilityFte(r.roots()), EPS);
     }
 
     @Test
     void workersOutOfRangeStayUnmanaged() {
-        final OrgChart.Result r = OrgChart
-            .build(row(2, 100, 100), Collections.singletonList(new OrgChart.Manager(0, 0, 0, 0.8, 1, true)), 2);
+        final OrgChart.Result r = OrgChart.build(
+            row(2, 100, 100),
+            Collections.singletonList(new OrgChart.Manager(0, 0, 0, 0.8, OrgChart.LEAD, true)),
+            2);
 
         assertAll(() -> assertEquals(2, r.unmanaged()), () -> assertEquals(0, r.leads()));
     }
@@ -85,12 +90,47 @@ class OrgChartTest {
     void anOfficeAllowsNoExecutives() {
         final List<OrgChart.Worker> workers = new ArrayList<>(row(8, 0, 0));
         final List<OrgChart.Manager> managers = Arrays.asList(
-            new OrgChart.Manager(4, 0, 2, 0.8, 1, true),
-            new OrgChart.Manager(4, 0, 6, 1.0, 3, true),
-            new OrgChart.Manager(4, 0, 8, 1.0, 3, true));
+            new OrgChart.Manager(4, 0, 2, 0.8, OrgChart.LEAD, true),
+            new OrgChart.Manager(4, 0, 6, 1.0, OrgChart.LEAD | OrgChart.EXECUTE, true),
+            new OrgChart.Manager(4, 0, 8, 1.0, OrgChart.LEAD | OrgChart.EXECUTE, true));
 
         final OrgChart.Result office = OrgChart.build(workers, managers, 2);
 
         assertEquals(0, office.executives());
+    }
+
+    @Test
+    void aLeadCannotDirect() {
+        final List<OrgChart.Worker> workers = new ArrayList<>(row(8, 0, 0));
+        workers.addAll(row(8, 0, 20));
+        final List<OrgChart.Manager> managers = Arrays.asList(
+            new OrgChart.Manager(4, 0, 2, 0.8, OrgChart.LEAD, true),
+            new OrgChart.Manager(4, 0, 22, 0.8, OrgChart.LEAD, true),
+            new OrgChart.Manager(4, 0, 11, 0.9, OrgChart.LEAD, true));
+
+        assertEquals(
+            0,
+            OrgChart.build(workers, managers, 2)
+                .directors(),
+            "Directors must be bosses");
+    }
+
+    @Test
+    void aDemonInTheBoardroomRunsTheDirectors() {
+        final List<OrgChart.Worker> workers = new ArrayList<>(row(8, 0, 0));
+        workers.addAll(row(8, 0, 20));
+        final List<OrgChart.Manager> managers = Arrays.asList(
+            new OrgChart.Manager(4, 0, 2, 0.8, OrgChart.LEAD, true),
+            new OrgChart.Manager(4, 0, 22, 0.8, OrgChart.LEAD, true),
+            new OrgChart.Manager(4, 0, 11, 0.95, OrgChart.DIRECT, true),
+            new OrgChart.Manager(4, 0, 12, 1.0, OrgChart.LEAD | OrgChart.EXECUTE, true));
+
+        final OrgChart.Result r = OrgChart.build(workers, managers, 3);
+
+        assertAll(
+            () -> assertEquals(1, r.executives()),
+            () -> assertEquals(1, r.directors()),
+            () -> assertEquals(2, r.leads()),
+            () -> assertEquals(16 * 0.8 * 0.95 * 1.0, OrgUnit.facilityFte(r.roots()), EPS));
     }
 }

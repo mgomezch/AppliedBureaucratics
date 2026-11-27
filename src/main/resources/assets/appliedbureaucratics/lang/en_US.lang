@@ -10,14 +10,14 @@ item.appliedbureaucratics.employment_contract.tooltip=Competitive salary. We are
 item.appliedbureaucratics.signed_contract.name=Signed Contract
 item.appliedbureaucratics.signed_contract.tooltip=Right-click a seat to assign this employee to it.\nKeep it: it is their file, and moves them again.
 item.appliedbureaucratics.management_contract.name=Management Contract
-item.appliedbureaucratics.management_contract.tooltip=For an Enderman, a Crimson Cleric or a tamed demon.\nLet's take this offline.
+item.appliedbureaucratics.management_contract.tooltip=Team leads: an Enderman, a Crimson Cleric or a tamed demon.\nDirectors: bosses only. My door is always open.
 item.appliedbureaucratics.pink_slip.name=Pink Slip
 item.appliedbureaucratics.pink_slip.tooltip=We thank you for your contributions and wish you well in your future endeavours.
 
 entity.appliedbureaucratics.WorkstationMount.name=Workstation
 
 chat.appliedbureaucratics.notAWorker=Only villagers sign employment contracts.
-chat.appliedbureaucratics.notAManager=Only Endermen, Crimson Clerics and tamed demons sign management contracts.
+chat.appliedbureaucratics.notAManager=Only Endermen, Crimson Clerics, tamed demons and bosses sign management contracts.
 chat.appliedbureaucratics.alreadyEmployed=%s already works here.
 chat.appliedbureaucratics.hired=Welcome aboard, %s, %s. Please sign here, and here, and here.
 chat.appliedbureaucratics.notEmployed=That is not one of ours.

@@ -1,32 +1,44 @@
 package com.gtnewhorizons.appliedbureaucratics.workforce;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.boss.IBossDisplayData;
 import net.minecraft.entity.monster.EntityEnderman;
 
 import org.jspecify.annotations.Nullable;
 
-/// The mobs that can be managers, with their efficiency and the levels they may sit at. Thaumcraft's cleric and
-/// Blood Magic's demons are looked up by class name once, so neither mod is needed.
+import com.gtnewhorizons.appliedbureaucratics.compute.OrgChart;
+import com.gtnewhorizons.appliedbureaucratics.config.ABConfig;
+
+/// The mobs that can be managers, with their efficiency, their roles in the org chart ([OrgChart#LEAD],
+/// [OrgChart#DIRECT], [OrgChart#EXECUTE]) and their morale penalty. Team leads are Endermen, Crimson Clerics and
+/// tamed demons. Directors must be bosses: any mob with a boss bar (a Wither, the Twilight Forest's bosses), or one
+/// of [ABConfig#bossClasses]. Executives are demons, in the Internet's boardroom. Thaumcraft's and Blood Magic's
+/// classes are looked up by name once, so neither mod is needed.
 public enum ManagerKind {
 
     /// "Let's take this offline."
-    ENDERMAN(null, 0.80, 1, -0),
+    ENDERMAN(null, 0.80, OrgChart.LEAD, 0),
     /// Daily stand-up.
-    CLERIC("thaumcraft.common.entities.monster.EntityCultistCleric", 0.90, 2, -5),
-    DEMON("WayofTime.alchemicalWizardry.common.entity.mob.EntityDemon", 1.00, 3, -10);
+    CLERIC("thaumcraft.common.entities.monster.EntityCultistCleric", 0.90, OrgChart.LEAD, 5),
+    DEMON("WayofTime.alchemicalWizardry.common.entity.mob.EntityDemon", 1.00, OrgChart.LEAD | OrgChart.EXECUTE, 10),
+    /// "My door is always open." It is not a door.
+    BOSS(null, 0.95, OrgChart.DIRECT, 15);
 
     private final @Nullable String className;
     private @Nullable Class<?> type;
     public final double efficiency;
-    /// 1: team lead; 2: also director; 3: also executive.
-    public final int maxLevel;
+    public final int roles;
     public final int moralePenalty;
 
-    ManagerKind(final @Nullable String className, final double efficiency, final int maxLevel,
-        final int moralePenalty) {
+    private static final List<Class<?>> BOSS_TYPES = new ArrayList<>();
+
+    ManagerKind(final @Nullable String className, final double efficiency, final int roles, final int moralePenalty) {
         this.className = className;
         this.efficiency = efficiency;
-        this.maxLevel = maxLevel;
+        this.roles = roles;
         this.moralePenalty = moralePenalty;
     }
 
@@ -34,16 +46,35 @@ public enum ManagerKind {
         ENDERMAN.type = EntityEnderman.class;
         for (final ManagerKind kind : values()) {
             if (kind.className != null) {
-                try {
-                    kind.type = Class.forName(kind.className);
-                } catch (ClassNotFoundException | LinkageError e) {
-                    kind.type = null;
-                }
+                kind.type = find(kind.className);
+            }
+        }
+        BOSS_TYPES.clear();
+        for (final String name : ABConfig.bossClasses) {
+            final Class<?> type = find(name);
+            if (type != null) {
+                BOSS_TYPES.add(type);
             }
         }
     }
 
+    private static @Nullable Class<?> find(final String name) {
+        try {
+            return Class.forName(name);
+        } catch (ClassNotFoundException | LinkageError e) {
+            return null;
+        }
+    }
+
     public static @Nullable ManagerKind of(final Entity entity) {
+        if (entity instanceof IBossDisplayData) {
+            return BOSS;
+        }
+        for (final Class<?> type : BOSS_TYPES) {
+            if (type.isInstance(entity)) {
+                return BOSS;
+            }
+        }
         for (final ManagerKind kind : values()) {
             if (kind.type != null && kind.type.isInstance(entity)) {
                 return kind;

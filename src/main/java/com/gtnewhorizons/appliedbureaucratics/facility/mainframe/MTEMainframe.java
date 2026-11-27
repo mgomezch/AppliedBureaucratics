@@ -395,9 +395,7 @@ public class MTEMainframe extends MTEEnhancedMultiBlockBase<MTEMainframe>
         }
         final List<OrgChart.Manager> managers = new ArrayList<>();
         final List<ManagerUpkeep.Upkept> kinds = new ArrayList<>();
-        int penalty = 0;
-        boolean demon = false;
-        boolean cleric = false;
+        final java.util.EnumSet<ManagerKind> present = java.util.EnumSet.noneOf(ManagerKind.class);
         for (final Workstations.Seated seated : Workstations
             .within(world, tile.getXCoord() + 0.5, tile.getYCoord() + 0.5, tile.getZCoord() + 0.5, 24)) {
             final ManagerKind kind = ManagerKind.of(seated.mob());
@@ -417,13 +415,14 @@ public class MTEMainframe extends MTEEnhancedMultiBlockBase<MTEMainframe>
                     seated.y(),
                     seated.z(),
                     kind.efficiency,
-                    kind.maxLevel,
+                    kind.roles,
                     this.upkeep.isPaid(kind)));
-            demon |= kind == ManagerKind.DEMON;
-            cleric |= kind == ManagerKind.CLERIC;
+            present.add(kind);
         }
-        penalty += demon ? 10 : 0;
-        penalty += cleric ? 5 : 0;
+        int penalty = 0;
+        for (final ManagerKind kind : present) {
+            penalty += kind.moralePenalty;
+        }
         this.upkeep.setManagers(kinds);
         this.org = OrgChart.build(staff, managers, 2);
         this.terminals = screens.size();

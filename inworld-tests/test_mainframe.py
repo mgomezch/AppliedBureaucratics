@@ -11,7 +11,8 @@ test's: a creative controller, a drive, and an interface whose stone pattern pus
   Office:      five librarians, hired and seated, are five terminals' workers: five unmanaged roots are worth
                5 / sqrt(5) FTE, planning at that x 4 x 1.5 steps/s while idle.
   A craft:     200 stone dispatch at the office's rate, about 2.2 ops/s (librarians have no dispatch affinity).
-  Management:  an Enderman at a desk with a bell becomes their team lead: 5 x 0.8 = 4 FTE.
+  Management:  an Enderman at a desk with a bell, under a roof so the sun does not make it teleport, becomes their
+               team lead: 5 x 0.8 = 4 FTE.
 """
 
 import math
@@ -94,6 +95,11 @@ def build(client: HarnessClient):
     client.set_block(*MANAGER_SEAT, "BiblioCraft:BiblioSeats")
     client.set_block(MANAGER_SEAT[0] + 1, Y, MANAGER_SEAT[2], "BiblioCraft:BiblioDesk")
     client.set_block(MANAGER_SEAT[0] - 1, Y, MANAGER_SEAT[2], "BiblioCraft:BiblioBell")
+    # Under a roof, lit from the floor: Endermen teleport in daylight when they can see the sky.
+    client.fill_area(54, Y + 3, 428, 66, Y + 3, 436, "minecraft:stone")
+    for x in range(55, 66, 3):
+        for z in range(429, 436, 3):
+            client.set_block(x, Y - 1, z, "minecraft:glowstone")
     # The ME network.
     client.set_block(*AE_CONTROLLER, "appliedenergistics2:tile.BlockCreativeEnergyController")
     client.set_block(*DRIVE, "appliedenergistics2:tile.BlockDrive")
