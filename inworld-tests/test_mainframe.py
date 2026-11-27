@@ -143,14 +143,22 @@ def wait_status(client: HarnessClient, chat: Chat, test, seconds: float = 30) ->
 
 
 def hire(client: HarnessClient, chat: Chat, entity: dict, contract: str):
-    client.set_player_slot(0, contract, 1)
-    client.select_item(contract)
-    client.teleport(entity["x"], Y, entity["z"] + 2.5)
-    time.sleep(0.5)
-    client.look_at(entity["x"], entity["y"] + 1.0, entity["z"])
-    time.sleep(0.3)
-    client.right_click()
-    assert chat.wait_for(r"Welcome aboard"), f"Could not hire {entity}"
+    """Hires `entity`, retrying with its new position if it walked off before the click landed."""
+    for attempt in range(4):
+        if attempt:
+            moved = [e for e in client.nearby_entities(radius=40) if e.get("id") == entity["id"]]
+            if not moved:
+                break
+            entity = moved[0]
+        client.set_player_slot(0, contract, 1)
+        client.select_item(contract)
+        client.teleport(entity["x"], Y, entity["z"] + 2.5)
+        time.sleep(0.3)
+        client.look_at(entity["x"], entity["y"] + 1.0, entity["z"])
+        client.right_click()
+        if chat.wait_for(r"Welcome aboard", 3):
+            return
+    raise AssertionError(f"Could not hire {entity}")
 
 
 def seat(client: HarnessClient, chat: Chat, seat_pos: tuple):
