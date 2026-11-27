@@ -33,6 +33,7 @@ import appeng.api.networking.crafting.ICraftingGrid;
 import appeng.api.networking.crafting.compute.ICraftingPlanningJob;
 import appeng.api.networking.security.PlayerSource;
 import appeng.crafting.v2.CraftingJobV2;
+import appeng.helpers.IInterfaceHost;
 import appeng.me.cache.CraftingGridCache;
 import appeng.util.Platform;
 import appeng.util.item.AEItemStack;
@@ -50,7 +51,7 @@ public class CommandAB extends CommandBase {
 
     @Override
     public String getCommandUsage(final ICommandSender sender) {
-        return "/ab status | /ab craft <item> [count] [meta] | /ab debug pattern <x> <y> <z> <slot> <in> <inCount> <out> <outCount>";
+        return "/ab status [x y z] | /ab craft <item> [count] [meta] | /ab debug pattern <x> <y> <z> <slot> <in> <inCount> <out> <outCount>";
     }
 
     @Override
@@ -75,7 +76,16 @@ public class CommandAB extends CommandBase {
             throw new WrongUsageException(this.getCommandUsage(sender));
         }
         switch (args[0].toLowerCase(Locale.ROOT)) {
-            case "status" -> this.status(sender);
+            case "status" -> this.status(
+                sender,
+                args.length >= 4
+                    ? nearestTray(
+                        sender.getEntityWorld(),
+                        new ChunkCoordinates(
+                            parseInt(sender, args[1]),
+                            parseInt(sender, args[2]),
+                            parseInt(sender, args[3])))
+                    : nearestTray(sender));
             case "craft" -> this.craft(sender, Arrays.copyOfRange(args, 1, args.length));
             case "debug" -> {
                 if (!sender.canCommandSenderUseCommand(2, "ab")) {
@@ -92,8 +102,10 @@ public class CommandAB extends CommandBase {
     }
 
     private static @Nullable TileRequisitionTray nearestTray(final ICommandSender sender) {
-        final World world = sender.getEntityWorld();
-        final ChunkCoordinates at = sender.getPlayerCoordinates();
+        return nearestTray(sender.getEntityWorld(), sender.getPlayerCoordinates());
+    }
+
+    private static @Nullable TileRequisitionTray nearestTray(final World world, final ChunkCoordinates at) {
         TileRequisitionTray best = null;
         double bestDistance = 16 * 16;
         for (final Object o : world.loadedTileEntityList) {
@@ -113,8 +125,7 @@ public class CommandAB extends CommandBase {
         return node != null ? node.getGrid() : null;
     }
 
-    private void status(final ICommandSender sender) {
-        final TileRequisitionTray tray = nearestTray(sender);
+    private void status(final ICommandSender sender, final @Nullable TileRequisitionTray tray) {
         if (tray == null) {
             say(sender, "No Requisition Tray within 16 blocks.");
             return;
@@ -221,7 +232,9 @@ public class CommandAB extends CommandBase {
         }
         final TileEntity te = sender.getEntityWorld()
             .getTileEntity(x, y, z);
-        if (!(te instanceof IInventory inventory) || slot < 0 || slot >= inventory.getSizeInventory()) {
+        // An interface's patterns are not its IInventory, which is its storage.
+        final Object target = te instanceof IInterfaceHost host ? host.getPatterns() : te;
+        if (!(target instanceof IInventory inventory) || slot < 0 || slot >= inventory.getSizeInventory()) {
             throw new WrongUsageException("No inventory slot " + slot + " at " + x + " " + y + " " + z);
         }
         final ItemStack pattern = AEApi.instance()

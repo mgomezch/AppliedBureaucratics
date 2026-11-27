@@ -19,11 +19,11 @@ public enum Furniture {
     DESK("BiblioCraft:BiblioDesk"),
     TYPEWRITER("BiblioCraft:BiblioTypewriter"),
     BELL("BiblioCraft:BiblioBell"),
-    BOOKCASE("BiblioCraft:BiblioBookcase", "minecraft:bookshelf"),
+    BOOKCASE("BiblioCraft:Bookcase", "minecraft:bookshelf"),
     CLOCK("BiblioCraft:BiblioClock"),
     LAMP("BiblioCraft:BiblioLamp", "BiblioCraft:BiblioIronLamp", "BiblioCraft:BiblioLantern",
         "BiblioCraft:BiblioIronLantern"),
-    POSTER("BiblioCraft:BiblioFancySign", "BiblioCraft:BiblioSign"),
+    POSTER("BiblioCraft:BiblioFancySign"),
     PLANT("minecraft:flower_pot");
 
     private String[] names;

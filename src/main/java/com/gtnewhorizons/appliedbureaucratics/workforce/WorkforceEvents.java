@@ -4,8 +4,10 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.event.entity.living.LivingAttackEvent;
 import net.minecraftforge.event.entity.player.EntityInteractEvent;
+import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 
 import com.gtnewhorizons.appliedbureaucratics.config.ABConfig;
+import com.gtnewhorizons.appliedbureaucratics.integration.bibliocraft.Furniture;
 import com.gtnewhorizons.appliedbureaucratics.item.ModItems;
 
 import cpw.mods.fml.common.eventhandler.EventPriority;
@@ -37,6 +39,24 @@ public final class WorkforceEvents {
             WorkforceActions.showCard(event.entityPlayer, target, employment);
             event.setCanceled(true);
         }
+    }
+
+    /// A signed contract used on a seat assigns its worker. This runs before the block's own activation, since a
+    /// BiblioCraft seat would otherwise seat the player instead, sneaking or not.
+    @SubscribeEvent(priority = EventPriority.HIGH)
+    public void onRightClickBlock(final PlayerInteractEvent event) {
+        if (event.action != PlayerInteractEvent.Action.RIGHT_CLICK_BLOCK) {
+            return;
+        }
+        final ItemStack held = event.entityPlayer.getCurrentEquippedItem();
+        if (held == null || held.getItem() != ModItems.signedContract
+            || !Furniture.SEAT.matches(event.world.getBlock(event.x, event.y, event.z))) {
+            return;
+        }
+        if (!event.world.isRemote) {
+            WorkforceActions.assign(event.entityPlayer, held, event.world, event.x, event.y, event.z);
+        }
+        event.setCanceled(true);
     }
 
     @SubscribeEvent
