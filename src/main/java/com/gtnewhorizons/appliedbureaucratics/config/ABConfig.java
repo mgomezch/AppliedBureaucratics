@@ -34,8 +34,9 @@ public final class ABConfig {
     public static double deskBellBonus = 1.25;
     public static int deskSeatRange = 2;
     public static int deskBookcaseRange = 3;
-    public static String[] bookItems = { "minecraft:book", "minecraft:writable_book", "minecraft:written_book",
-        "minecraft:enchanted_book" };
+    // The break room.
+    public static double breakRoomRange = 16;
+    public static int coffeeWorkerDays = 4;
 
     private ABConfig() {}
 
@@ -113,8 +114,16 @@ public final class ABConfig {
             .getInt();
         deskBellBonus = c.get(desk, "bellBonus", deskBellBonus, "Dispatch with a desk bell.")
             .getDouble();
-        bookItems = c.get(desk, "bookItems", bookItems, "Items that count as books.")
-            .getStringList();
+        breakRoomRange = c.get("breakroom", "range", breakRoomRange, "How far a Break Room Counter serves.")
+            .getDouble();
+        coffeeWorkerDays = c
+            .get("breakroom", "coffeeWorkerDays", coffeeWorkerDays, "Worker-days one cup of coffee lasts.")
+            .getInt();
+        for (final ItemList list : ItemList.values()) {
+            list.configure(
+                c.get("items", list.name(), list.getNames(), "Items for " + list.name() + ": name or name:meta.")
+                    .getStringList());
+        }
 
         for (final Furniture role : Furniture.values()) {
             role.configure(

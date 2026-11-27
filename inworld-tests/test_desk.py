@@ -14,6 +14,8 @@ the Desk dispatches shows up as one cobblestone in that chest.
   A craft:     /ab craft queues 200 stone; it is planned in the background, then starts on the Desk's CPU and
                dispatches at about 1.25 ops/s (kDisp x the bell).
   Reload:      after saving and reloading, the job is still on the Desk and still dispatching.
+  Morale:      cocoa beans in a Break Room Counter are coffee; a redstone block on the tray is crunch, and
+               dispatch rises by half.
   Release:     a Pink Slip dismounts the worker and clears its name.
 """
 
@@ -41,6 +43,8 @@ TYPEWRITER = (34, Y + 1, 420)
 BELL = (33, Y, 419)
 SHELVES = [(x, y, 418) for x in (31, 32, 33) for y in (Y, Y + 1)]
 VILLAGER_AT = (33, Y, 423)
+COUNTER = (36, Y, 422)
+CRUNCH_SWITCH = (31, Y, 421)
 STANDING_ON = (32.5, Y, 424.5)
 
 
@@ -170,6 +174,24 @@ def check_reload(client: HarnessClient, chat: Chat, driver: InWorldTestDriver):
     return chat
 
 
+def check_morale(client: HarnessClient, chat: Chat):
+    print("[*] Morale: coffee and crunch")
+    client.set_block(*COUNTER, "appliedbureaucratics:break_room_counter")
+    client.set_container_slot(*COUNTER, 0, "minecraft:dye", 16, damage=3)
+    time.sleep(2)
+    calm = desk_status(client, chat, TRAY)
+    print(f"    {calm}")
+    assert "coffee" in calm["perks"], f"Expected coffee, got {calm}"
+    client.set_block(*CRUNCH_SWITCH, "minecraft:redstone_block")
+    time.sleep(2)
+    crunch = desk_status(client, chat, TRAY)
+    print(f"    {crunch}")
+    assert "crunch" in crunch["perks"], f"Expected crunch, got {crunch}"
+    assert abs(crunch["dispatch"] - 1.5 * calm["dispatch"]) < 0.05, f"Expected dispatch x1.5: {calm} -> {crunch}"
+    client.set_block(*CRUNCH_SWITCH, "minecraft:air")
+    print(f"[✓] Coffee is served, and crunch takes dispatch from {calm['dispatch']} to {crunch['dispatch']} ops/s")
+
+
 def check_release(client: HarnessClient, chat: Chat):
     print("[*] Release")
     client.set_player_slot(0, "appliedbureaucratics:pink_slip", 1)
@@ -198,6 +220,7 @@ def main(port: int) -> bool:
         check_working(client, chat)
         check_craft(client, chat)
         chat = check_reload(client, chat, driver)
+        check_morale(client, chat)
         check_release(client, chat)
 
     return driver.run(build_fn=build, test_fn=test)

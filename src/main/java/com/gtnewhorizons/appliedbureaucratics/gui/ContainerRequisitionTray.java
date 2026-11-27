@@ -21,9 +21,11 @@ public class ContainerRequisitionTray extends Container {
     public static final int PAID = 6;
     public static final int WORKER = 7;
     public static final int BUSY = 8;
+    /// Bits: 1 crunching, 2 coffee, 4 a party.
+    public static final int FLAGS = 9;
 
     final TileRequisitionTray tray;
-    final SyncedInts values = new SyncedInts(9);
+    final SyncedInts values = new SyncedInts(10);
 
     public ContainerRequisitionTray(final InventoryPlayer player, final TileRequisitionTray tray) {
         this.tray = tray;
@@ -97,10 +99,17 @@ public class ContainerRequisitionTray extends Container {
                 .worker() != null ? 1
                     : this.tray.getSurvey()
                         .founder() != null ? 2 : 0);
+        this.updateFlags();
         this.values.set(
             BUSY,
             this.tray.getSlots()
                 .getBusyCount());
+    }
+
+    private void updateFlags() {
+        this.values.set(
+            FLAGS,
+            (this.tray.isCrunching() ? 1 : 0) | (this.tray.hasCoffee() ? 2 : 0) | (this.tray.isPartying() ? 4 : 0));
     }
 
     @Override

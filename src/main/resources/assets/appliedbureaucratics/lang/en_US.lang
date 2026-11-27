@@ -1,6 +1,8 @@
 itemGroup.appliedbureaucratics=Applied Bureaucratics
 
 tile.appliedbureaucratics.requisition_tray.name=Requisition Tray
+tile.appliedbureaucratics.break_room_counter.name=Break Room Counter
+tile.appliedbureaucratics.break_room_counter.tooltip=In lieu of a raise.\nCoffee within 16 blocks: morale +10. Cake or pizza: a party, +20 for a day.
 tile.appliedbureaucratics.requisition_tray.tooltip=Sole proprietorship. You are the IT department.\nPlace on ME cable, with a BiblioCraft seat, desk and typewriter nearby.
 
 item.appliedbureaucratics.employment_contract.name=Employment Contract
@@ -74,3 +76,7 @@ ab.gui.morale=Morale: %s
 ab.gui.paper=< Paper
 ab.gui.paid=Wages: paid  >
 ab.gui.unpaid=Wages: UNPAID  >
+ab.gui.breakroom=Coffee keeps them going. Cake keeps them quiet.
+ab.gui.crunch=CRUNCH (redstone)
+ab.gui.coffee=Coffee
+ab.gui.party=Pizza party!

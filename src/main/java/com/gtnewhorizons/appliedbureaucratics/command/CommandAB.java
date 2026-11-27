@@ -145,7 +145,7 @@ public class CommandAB extends CommandBase {
             sender,
             String.format(
                 Locale.ROOT,
-                "  planning %.2f steps/s, dispatch %.2f ops/s, filing %d/%d B, morale %.0f, %s, worker %s, slots busy %d",
+                "  planning %.2f steps/s, dispatch %.2f ops/s, filing %d/%d B, morale %.0f, %s, worker %s, slots busy %d%s%s%s",
                 tray.getOutput()
                     .planningRate(),
                 tray.getOutput()
@@ -162,7 +162,10 @@ public class CommandAB extends CommandBase {
                         : tray.getSurvey()
                             .founder() != null ? "founder" : "none",
                 tray.getSlots()
-                    .getBusyCount()));
+                    .getBusyCount(),
+                tray.isCrunching() ? ", crunch" : "",
+                tray.hasCoffee() ? ", coffee" : "",
+                tray.isPartying() ? ", party" : ""));
         final IGrid grid = gridOf(tray);
         if (grid != null) {
             final IComputeGrid compute = grid.getCache(IComputeGrid.class);

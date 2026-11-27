@@ -72,6 +72,7 @@ def desk_status(client: HarnessClient, chat: Chat, tray: tuple) -> Dict[str, obj
         status.update({k: float(v) if k in ("planning", "dispatch") else v for k, v in m.groupdict().items()})
         for k in ("used", "filing", "morale", "busy"):
             status[k] = int(status[k])
+        status["perks"] = [p.strip() for p in (body or "")[m.end():].split(",") if p.strip()]
     n = NETWORK_LINE.search(net or "")
     if n:
         status["network"] = {k: float(v) for k, v in n.groupdict().items()}

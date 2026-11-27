@@ -8,6 +8,7 @@ import org.apache.logging.log4j.Logger;
 import com.gtnewhorizons.appliedbureaucratics.block.ModBlocks;
 import com.gtnewhorizons.appliedbureaucratics.command.CommandAB;
 import com.gtnewhorizons.appliedbureaucratics.config.ABConfig;
+import com.gtnewhorizons.appliedbureaucratics.config.ItemList;
 import com.gtnewhorizons.appliedbureaucratics.gui.GuiHandler;
 import com.gtnewhorizons.appliedbureaucratics.integration.ae2.ComputeGridCache;
 import com.gtnewhorizons.appliedbureaucratics.integration.ae2.ComputePolicy;
@@ -74,6 +75,7 @@ public class AppliedBureaucratics {
     @Mod.EventHandler
     public void postInit(FMLPostInitializationEvent event) {
         Furniture.resolveAll();
+        ItemList.resolveAll();
         ManagerKind.resolveAll();
         Recipes.register();
     }

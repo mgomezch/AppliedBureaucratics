@@ -43,5 +43,16 @@ final class Recipes {
             new ItemStack(Items.dye, 1, 0),
             Blocks.emerald_block);
         GameRegistry.addShapelessRecipe(new ItemStack(ModItems.pinkSlip), Items.paper, new ItemStack(Items.dye, 1, 9));
+        GameRegistry.addRecipe(
+            new ItemStack(ModBlocks.breakRoomCounter),
+            "SSS",
+            "PCP",
+            "PPP",
+            'S',
+            Blocks.stone_slab,
+            'P',
+            Blocks.planks,
+            'C',
+            Items.cauldron);
     }
 }

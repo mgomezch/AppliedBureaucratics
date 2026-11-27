@@ -97,7 +97,33 @@ def document(seal=None, stripe=None, signed=False, base=PAPER):
     return c
 
 
+WOOD = (150, 110, 70, 255)
+WOOD_DARK = (105, 75, 45, 255)
+STONE = (150, 150, 150, 255)
+
+
+def counter_side():
+    c = canvas(WOOD)
+    frame(c, WOOD_DARK)
+    rect(c, 0, 0, 15, 2, STONE)
+    rect(c, 3, 6, 6, 12, WOOD_DARK)
+    rect(c, 9, 6, 12, 12, WOOD_DARK)
+    return c
+
+
+def counter_top():
+    c = canvas(STONE)
+    frame(c, (120, 120, 120, 255))
+    rect(c, 3, 3, 6, 7, (240, 240, 240, 255))
+    rect(c, 4, 4, 5, 5, (90, 55, 30, 255))
+    rect(c, 9, 8, 13, 12, (230, 190, 120, 255))
+    rect(c, 10, 9, 12, 11, (200, 60, 50, 255))
+    return c
+
+
 def main():
+    png(f"{OUT}/blocks/break_room_counter_side.png", counter_side())
+    png(f"{OUT}/blocks/break_room_counter_top.png", counter_top())
     png(f"{OUT}/blocks/requisition_tray_side.png", tray_side())
     png(f"{OUT}/blocks/requisition_tray_top.png", tray_top())
     png(f"{OUT}/blocks/requisition_tray_bottom.png", tray_bottom())

@@ -46,6 +46,20 @@ public class GuiRequisitionTray extends GuiContainer {
             default -> "ab.gui.worker.none";
         };
         this.fontRendererObj.drawString(StatCollector.translateToLocal(worker), 8, 40, 0x404040);
+        final int flags = this.value(ContainerRequisitionTray.FLAGS);
+        final StringBuilder perks = new StringBuilder();
+        if ((flags & 1) != 0) {
+            perks.append(StatCollector.translateToLocal("ab.gui.crunch"))
+                .append("  ");
+        }
+        if ((flags & 2) != 0) {
+            perks.append(StatCollector.translateToLocal("ab.gui.coffee"))
+                .append("  ");
+        }
+        if ((flags & 4) != 0) {
+            perks.append(StatCollector.translateToLocal("ab.gui.party"));
+        }
+        this.fontRendererObj.drawString(perks.toString(), 8, 88, 0x804000);
         this.fontRendererObj.drawString(
             StatCollector.translateToLocalFormatted(
                 "ab.gui.planning",

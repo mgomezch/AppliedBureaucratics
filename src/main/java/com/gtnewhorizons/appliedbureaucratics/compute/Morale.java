@@ -18,11 +18,17 @@ public final class Morale {
 
     /// Moves morale towards `target` by `minutes` points at most.
     public void drift(final double target, final double minutes) {
+        this.drift(target, minutes, 1);
+    }
+
+    /// Moves morale towards `target`: up by `minutes` points at most, down by `minutes × decay` at most. Human
+    /// Resources (a butcher on staff) halves the decay.
+    public void drift(final double target, final double minutes, final double decay) {
         final double goal = clamp(target);
         if (this.value < goal) {
             this.value = Math.min(goal, this.value + minutes);
         } else {
-            this.value = Math.max(goal, this.value - minutes);
+            this.value = Math.max(goal, this.value - minutes * decay);
         }
     }
 

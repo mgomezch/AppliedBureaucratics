@@ -22,13 +22,17 @@ import com.gtnewhorizons.appliedbureaucratics.compute.Affinity;
 import com.gtnewhorizons.appliedbureaucratics.compute.ComputeSettings;
 import com.gtnewhorizons.appliedbureaucratics.compute.FacilityOutput;
 import com.gtnewhorizons.appliedbureaucratics.compute.Morale;
+import com.gtnewhorizons.appliedbureaucratics.compute.MoraleTarget;
 import com.gtnewhorizons.appliedbureaucratics.compute.OrgUnit;
 import com.gtnewhorizons.appliedbureaucratics.compute.Payroll;
 import com.gtnewhorizons.appliedbureaucratics.compute.Workforce;
 import com.gtnewhorizons.appliedbureaucratics.config.ABConfig;
+import com.gtnewhorizons.appliedbureaucratics.config.ItemList;
+import com.gtnewhorizons.appliedbureaucratics.facility.Amenities;
 import com.gtnewhorizons.appliedbureaucratics.facility.Bottleneck;
 import com.gtnewhorizons.appliedbureaucratics.facility.FacilitySlots;
 import com.gtnewhorizons.appliedbureaucratics.facility.IComputeFacility;
+import com.gtnewhorizons.appliedbureaucratics.facility.breakroom.TileBreakRoomCounter;
 import com.gtnewhorizons.appliedbureaucratics.integration.ae2.IComputeGrid;
 import com.gtnewhorizons.appliedbureaucratics.workforce.Employment;
 
@@ -65,6 +69,9 @@ public class TileRequisitionTray extends TileEntity
     private FacilityOutput output = FacilityOutput.OFF;
     private Bottleneck bottleneck = Bottleneck.NO_POWER;
     private boolean paper;
+    private boolean crunch;
+    private boolean coffee;
+    private boolean party;
     /// Sheets of paper owed for planning done and not yet taken from the paper slot.
     private double sheetsOwed;
 
@@ -110,6 +117,12 @@ public class TileRequisitionTray extends TileEntity
     private void recompute() {
         this.slots.setFiling(this.survey.filing());
         this.paper = this.takePaper();
+        this.crunch = this.worldObj.isBlockIndirectlyGettingPowered(this.xCoord, this.yCoord, this.zCoord);
+        final TileBreakRoomCounter counter = TileBreakRoomCounter
+            .near(this.worldObj, this.xCoord, this.yCoord, this.zCoord);
+        final int staff = this.survey.hasWorker() ? 1 : 0;
+        this.coffee = counter != null && counter.serveCoffee(staff, 20);
+        this.party = counter != null && staff > 0 && counter.party();
         if (!this.isPowered()) {
             this.setOff(Bottleneck.NO_POWER);
             return;
@@ -138,7 +151,7 @@ public class TileRequisitionTray extends TileEntity
             split,
             this.morale.multiplier(),
             this.paper,
-            false,
+            this.crunch,
             this.survey.bell() ? ABConfig.deskBellBonus : 1,
             1);
         this.slots.setDispatchRate(this.output.dispatchRate());
@@ -193,13 +206,17 @@ public class TileRequisitionTray extends TileEntity
     }
 
     private double moraleTarget() {
-        double target = 50;
-        if (this.survey.worker() != null) {
-            target += this.payroll.isPaid() ? 10 : -40;
-        } else {
-            target += 10;
-        }
-        return target + this.survey.amenities();
+        final int[] seat = this.survey.seatAt();
+        final boolean crowded = seat != null && Amenities.crowded(this.worldObj, seat[0], seat[1], seat[2]);
+        return new MoraleTarget(
+            this.isPaid(),
+            this.survey.amenities(),
+            this.coffee,
+            this.party,
+            crowded,
+            Amenities.smog(this.worldObj, this.xCoord, this.zCoord),
+            0,
+            this.crunch).value();
     }
 
     private void payWages() {
@@ -220,13 +237,13 @@ public class TileRequisitionTray extends TileEntity
     private boolean takePaper() {
         final ItemStack paper = this.inventory[SLOT_PAPER];
         final int owed = (int) Math.floor(this.sheetsOwed);
-        if (owed > 0 && paper != null && paper.getItem() == Items.paper) {
+        if (owed > 0 && paper != null && ItemList.PAPER.matches(paper)) {
             final int taken = Math.min(owed, paper.stackSize);
             this.decrStackSize(SLOT_PAPER, taken);
             this.sheetsOwed -= taken;
         }
         final ItemStack left = this.inventory[SLOT_PAPER];
-        return left != null && left.getItem() == Items.paper && left.stackSize > 0;
+        return left != null && ItemList.PAPER.matches(left) && left.stackSize > 0;
     }
 
     private @Nullable IComputeGrid computeGrid() {
@@ -271,6 +288,18 @@ public class TileRequisitionTray extends TileEntity
 
     public DeskSurvey getSurvey() {
         return this.survey;
+    }
+
+    public boolean isCrunching() {
+        return this.crunch;
+    }
+
+    public boolean hasCoffee() {
+        return this.coffee;
+    }
+
+    public boolean isPartying() {
+        return this.party;
     }
 
     public boolean isPaid() {
@@ -482,7 +511,7 @@ public class TileRequisitionTray extends TileEntity
 
     @Override
     public boolean isItemValidForSlot(final int slot, final ItemStack stack) {
-        return slot == SLOT_PAPER ? stack.getItem() == Items.paper : stack.getItem() == Items.emerald;
+        return slot == SLOT_PAPER ? ItemList.PAPER.matches(stack) : stack.getItem() == Items.emerald;
     }
 
     @Override
