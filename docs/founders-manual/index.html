@@ -2,144 +2,138 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=Caveat:wght@500;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap">
 <style>
-/* Layout: a fund's confidential founder memo.  A sticky "cap table" of rounds on the left, one reading column, wide
-   figures, and the partner's highlighter notes in the margin. */
+/* Layout: a leaked thread of corporate email, printed white on black in one monospace face.  A sticky folder list of
+   rounds on the left, one reading column, wide figures.  Emphasis is by inversion, never by colour. */
 :root {
-  --paper: #eef1f6;
-  --sheet: #ffffff;
-  --ink: #121a31;
-  --muted: #56607a;
-  --rule: #d3d9e4;
-  --accent: #2340d0;
-  --accent-ink: #ffffff;
-  --marker: #ffe14a;
-  --marker-ink: #121a31;
-  --note: #b3261e;
-  --code-bg: #e6eaf2;
-  --display: "Archivo", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
-  --body: "IBM Plex Sans", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
-  --hand: "Caveat", "Segoe Print", "Bradley Hand", cursive;
-}
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --paper: #0d1222; --sheet: #141b31; --ink: #e5e9f3; --muted: #9aa4bd; --rule: #29334f;
-    --accent: #8197ff; --accent-ink: #0d1222; --marker: #d9b72a; --marker-ink: #0d1222; --note: #ff8a80;
-    --code-bg: #1c2541; color-scheme: dark;
-  }
-}
-:root[data-theme="dark"] {
-  --paper: #0d1222; --sheet: #141b31; --ink: #e5e9f3; --muted: #9aa4bd; --rule: #29334f;
-  --accent: #8197ff; --accent-ink: #0d1222; --marker: #d9b72a; --marker-ink: #0d1222; --note: #ff8a80;
-  --code-bg: #1c2541; color-scheme: dark;
+  --bg: #000000;
+  --fg: #f2f2f2;
+  --dim: #9a9a9a;
+  --faint: #5c5c5c;
+  --rule: #2e2e2e;
+  --panel: #0b0b0b;
+  --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, "Liberation Mono", monospace;
+  color-scheme: dark;
 }
 
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
 body {
-  background: var(--paper); color: var(--ink); font-family: var(--body); font-size: 1.0625rem; line-height: 1.6;
+  background: var(--bg); color: var(--fg); font-family: var(--mono); font-size: 0.95rem; line-height: 1.65;
   padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
 }
-a { color: var(--accent); text-underline-offset: 0.15em; }
-a:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 2px; }
-code, kbd { font-family: var(--mono); font-size: 0.88em; background: var(--code-bg); padding: 0.05em 0.35em; border-radius: 3px; }
-mark { background: linear-gradient(transparent 12%, var(--marker) 12%, var(--marker) 88%, transparent 88%); color: var(--marker-ink); padding: 0 0.1em; }
+a { color: var(--fg); text-decoration: underline; text-decoration-color: var(--faint); text-underline-offset: 0.2em; }
+a:hover { text-decoration-color: var(--fg); }
+a:focus-visible { outline: 1px solid var(--fg); outline-offset: 2px; }
+b, strong { font-weight: 600; }
+code, kbd { font-family: var(--mono); font-size: 1em; border: 1px solid var(--rule); padding: 0 0.3em; }
+mark { background: var(--fg); color: var(--bg); padding: 0 0.25em; }
 
 .frame { max-width: 1180px; margin: 0 auto; padding-block: 32px 64px; display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 48px; }
 @media (max-width: 900px) { .frame { grid-template-columns: minmax(0, 1fr); gap: 24px; } }
 
-/* The cap table of rounds. */
-.rounds { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 24px); align-self: start; font-family: var(--display); }
-.rounds h2 { font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); margin: 0 0 12px; font-weight: 600; }
-.rounds ol { list-style: none; margin: 0; padding: 0; border-left: 2px solid var(--rule); }
-.rounds li a { display: grid; grid-template-columns: 3.2em 1fr; gap: 6px; padding: 6px 0 6px 12px; margin-left: -2px; border-left: 2px solid transparent; color: var(--ink); text-decoration: none; font-stretch: 90%; line-height: 1.25; }
-.rounds li a:hover { border-left-color: var(--accent); }
-.rounds .tier { font-family: var(--mono); font-size: 0.78rem; color: var(--muted); padding-top: 2px; }
-.rounds .name { font-weight: 650; font-size: 0.95rem; }
-.rounds .name small { display: block; font-weight: 400; color: var(--muted); font-size: 0.78rem; font-family: var(--body); }
+/* The folder list. */
+.rounds { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 24px); align-self: start; font-size: 0.85rem; }
+.rounds h2 { font-size: 0.78rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--dim); margin: 0 0 10px; font-weight: 500; }
+.rounds h2::before { content: "\25B8\00a0"; }
+.rounds ol { list-style: none; margin: 0; padding: 0; border-left: 1px solid var(--rule); }
+.rounds li a { display: grid; grid-template-columns: 3.4em 1fr; gap: 4px; padding: 5px 0 5px 12px; margin-left: -1px; border-left: 1px solid transparent; text-decoration: none; line-height: 1.3; }
+.rounds li a:hover { border-left-color: var(--fg); background: var(--panel); }
+.rounds .tier { color: var(--dim); }
+.rounds .name { font-weight: 600; }
+.rounds .name small { display: block; font-weight: 400; color: var(--dim); font-size: 0.92em; }
 @media (max-width: 900px) {
   .rounds { position: static; }
-  .rounds ol { display: flex; flex-wrap: wrap; gap: 4px 16px; border-left: 0; }
-  .rounds li a { border-left: 0; padding: 4px 0; margin: 0; grid-template-columns: auto auto; }
+  .rounds ol { display: flex; flex-wrap: wrap; gap: 2px 18px; border-left: 0; }
+  .rounds li a { border-left: 0; padding: 3px 0; margin: 0; grid-template-columns: auto auto; }
   .rounds .name small { display: none; }
 }
 
 main { min-width: 0; }
 
-/* The memo header. */
-.memo { background: var(--sheet); border: 1px solid var(--rule); padding: 28px clamp(18px, 4vw, 44px) 32px; }
-.memo-head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 24px; font-family: var(--display); font-size: 0.74rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); font-weight: 600; border-bottom: 1px solid var(--rule); padding-bottom: 12px; }
-.memo-head .stamp { color: var(--note); border: 1.5px solid currentColor; padding: 1px 8px; transform: rotate(-2deg); }
-.routing { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 2px 16px; font-family: var(--mono); font-size: 0.86rem; margin: 16px 0 24px; }
-.routing dt { color: var(--muted); }
+/* The leaked email's header. */
+.memo { border: 1px solid var(--rule); padding: 24px clamp(16px, 4vw, 40px) 32px; background: var(--panel); }
+.memo-head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 24px; font-size: 0.78rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--dim); border-bottom: 1px dashed var(--rule); padding-bottom: 12px; }
+.memo-head .stamp { color: var(--bg); background: var(--fg); padding: 0 8px; letter-spacing: 0.14em; }
+.routing { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 0 16px; margin: 16px 0 24px; }
+.routing dt { color: var(--dim); }
+.routing dt::after { content: ":"; }
 .routing dd { margin: 0; }
-h1 { font-family: var(--display); font-stretch: 112%; font-weight: 850; font-size: clamp(2.4rem, 6.4vw, 4.6rem); line-height: 0.95; letter-spacing: -0.01em; margin: 0 0 18px; text-wrap: balance; }
-h1 .sub { display: block; font-stretch: 75%; font-weight: 500; font-size: 0.36em; letter-spacing: 0.02em; color: var(--accent); margin-top: 10px; line-height: 1.2; }
-.lede { font-size: 1.2rem; line-height: 1.55; max-width: 62ch; margin: 0 0 12px; }
-.memo p { max-width: 66ch; }
+h1 { font-weight: 700; font-size: clamp(1.9rem, 5vw, 3.2rem); line-height: 1.05; letter-spacing: -0.02em; margin: 0 0 18px; text-wrap: balance; text-transform: uppercase; }
+h1 .sub { display: block; font-weight: 400; font-size: 0.34em; letter-spacing: 0; text-transform: none; color: var(--dim); margin-top: 12px; line-height: 1.4; }
+.lede { font-size: 1.05rem; max-width: 64ch; margin: 0 0 12px; }
+.memo p { max-width: 68ch; }
+.redact { background: var(--fg); color: var(--fg); user-select: none; border-radius: 1px; }
 
 /* The round strip: the order of the rounds is the point. */
-.strip { list-style: none; margin: 28px 0 0; padding: 0; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 0; counter-reset: r; }
-.strip li { border-top: 3px solid var(--ink); padding: 10px 10px 0 0; position: relative; }
-.strip li::before { content: ""; position: absolute; top: -8px; left: 0; width: 13px; height: 13px; border-radius: 50%; background: var(--sheet); border: 3px solid var(--ink); }
-.strip li.exit { border-top-color: var(--accent); }
-.strip li.exit::before { background: var(--accent); border-color: var(--accent); }
-.strip .t { font-family: var(--mono); font-size: 0.76rem; color: var(--muted); display: block; margin-top: 6px; }
-.strip .r { font-family: var(--display); font-weight: 750; font-stretch: 85%; font-size: 1rem; display: block; line-height: 1.15; }
-.strip .f { font-size: 0.82rem; color: var(--muted); display: block; line-height: 1.3; margin-top: 2px; }
+.strip { list-style: none; margin: 28px 0 0; padding: 0; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); }
+.strip li { border-top: 1px solid var(--fg); padding: 10px 10px 0 0; position: relative; }
+.strip li::before { content: ""; position: absolute; top: -5px; left: 0; width: 9px; height: 9px; background: var(--bg); border: 1px solid var(--fg); }
+.strip li.exit::before { background: var(--fg); }
+.strip .t { font-size: 0.78rem; color: var(--dim); display: block; margin-top: 4px; }
+.strip .r { font-weight: 700; display: block; line-height: 1.2; text-transform: uppercase; font-size: 0.9rem; }
+.strip .f { font-size: 0.8rem; color: var(--dim); display: block; line-height: 1.35; margin-top: 2px; }
 @media (max-width: 720px) { .strip { grid-template-columns: repeat(3, minmax(0, 1fr)); row-gap: 20px; } }
 @media (max-width: 420px) { .strip { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 
-/* Sections. */
+/* Sections: each one another message in the thread. */
 section { padding-top: 56px; }
-.kicker { font-family: var(--display); font-size: 0.76rem; letter-spacing: 0.16em; text-transform: uppercase; font-weight: 650; color: var(--accent); margin: 0 0 6px; }
-h2 { font-family: var(--display); font-stretch: 100%; font-weight: 800; font-size: clamp(1.7rem, 3.4vw, 2.4rem); line-height: 1.05; margin: 0 0 16px; text-wrap: balance; }
-h3 { font-family: var(--display); font-weight: 700; font-stretch: 92%; font-size: 1.2rem; margin: 32px 0 8px; }
-section p, section li { max-width: 66ch; }
-section ul, section ol { padding-left: 1.3em; }
+.kicker { font-size: 0.8rem; color: var(--dim); margin: 0 0 6px; border-top: 1px dashed var(--rule); padding-top: 14px; }
+.kicker::before { content: "-----Original Message-----\A Subject: RE: "; white-space: pre; }
+h2 { font-weight: 700; font-size: clamp(1.25rem, 2.6vw, 1.7rem); line-height: 1.2; margin: 6px 0 16px; text-wrap: balance; }
+h3 { font-weight: 600; font-size: 1rem; margin: 32px 0 8px; text-transform: uppercase; letter-spacing: 0.06em; }
+h3::before { content: "## "; color: var(--faint); }
+section p, section li { max-width: 68ch; }
+section ul, section ol { padding-left: 1.6em; }
+section ul { list-style: none; }
+section ul > li { position: relative; }
+section ul > li::before { content: "-"; position: absolute; left: -1.2em; color: var(--dim); }
 section li + li { margin-top: 4px; }
 
-/* The partner's voice: a pull-quote set in the display face, with a handwritten aside. */
-.take { border-left: 4px solid var(--accent); padding: 4px 0 4px 18px; margin: 0 0 24px; max-width: 64ch; }
-.take p { font-family: var(--display); font-stretch: 88%; font-size: 1.22rem; line-height: 1.4; font-weight: 520; margin: 0; }
+/* The partner's voice, and his replies quoted inline. */
+.take { border-left: 2px solid var(--fg); padding: 2px 0 2px 16px; margin: 0 0 24px; max-width: 66ch; }
+.take p { font-size: 1.05rem; line-height: 1.55; font-weight: 600; margin: 0; }
 .take p + p { margin-top: 8px; }
-.aside { font-family: var(--hand); font-size: 1.45rem; line-height: 1.15; color: var(--note); margin: 18px 0; max-width: 40ch; transform: rotate(-1deg); }
-.aside::before { content: "\2014\00a0GT: "; font-weight: 700; }
+.aside { color: var(--dim); margin: 18px 0; max-width: 64ch; font-style: italic; }
+.aside::before { content: "> GT: "; font-style: normal; color: var(--faint); }
 
-/* Figures. */
+/* Figures: attachments. */
 figure { margin: 24px 0; }
-figure img { display: block; width: 100%; height: auto; border: 1px solid var(--rule); background: var(--sheet); image-rendering: auto; }
-figcaption { font-size: 0.86rem; color: var(--muted); margin-top: 8px; max-width: 70ch; }
-figcaption b { color: var(--ink); font-weight: 600; }
+figure img { display: block; width: 100%; height: auto; border: 1px solid var(--rule); background: var(--panel); }
+figcaption { font-size: 0.8rem; color: var(--dim); margin-top: 8px; max-width: 76ch; }
+figcaption::before { content: "[attachment] "; color: var(--faint); }
+figcaption b { color: var(--fg); font-weight: 600; }
 .pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; align-items: start; }
 .pair figure { margin: 0; }
 .pair.narrow-wide { grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); }
 @media (max-width: 640px) { .pair, .pair.narrow-wide { grid-template-columns: minmax(0, 1fr); } }
 .figrow { margin: 24px 0; }
 
-/* Tables: the term sheet look. */
-.tbl { overflow-x: auto; margin: 16px 0 24px; border: 1px solid var(--rule); background: var(--sheet); }
-table { border-collapse: collapse; width: 100%; font-size: 0.94rem; font-variant-numeric: tabular-nums; }
-th, td { text-align: left; vertical-align: top; padding: 9px 12px; border-bottom: 1px solid var(--rule); }
-thead th { font-family: var(--display); font-weight: 700; font-size: 0.74rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); background: var(--paper); }
+/* Tables: plain-text spreadsheets pasted into the email. */
+.tbl { overflow-x: auto; margin: 16px 0 24px; border: 1px solid var(--rule); }
+table { border-collapse: collapse; width: 100%; font-size: 0.88rem; font-variant-numeric: tabular-nums; }
+th, td { text-align: left; vertical-align: top; padding: 7px 12px; border-bottom: 1px solid var(--rule); }
+thead th { font-weight: 500; font-size: 0.76rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--dim); border-bottom: 1px solid var(--fg); }
 tbody tr:last-child td { border-bottom: 0; }
-td.n { font-family: var(--mono); white-space: nowrap; }
-td.n.plus { color: var(--accent); }
-td.n.minus { color: var(--note); }
+td.n { white-space: nowrap; }
+td.n.plus::before { content: ""; }
+td.n.minus { color: var(--dim); }
 
-/* Build lists: what goes where. */
-.build { background: var(--sheet); border: 1px solid var(--rule); padding: 16px 20px; margin: 16px 0 24px; }
-.build h4 { font-family: var(--display); font-size: 0.76rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); margin: 0 0 8px; font-weight: 650; }
+/* Build lists. */
+.build { border: 1px dashed var(--faint); padding: 14px 18px; margin: 16px 0 24px; }
+.build h4 { font-size: 0.78rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--dim); margin: 0 0 8px; font-weight: 500; }
+.build h4::before { content: "[ ] "; }
 .build ul { margin: 0; }
 
-.formula { font-family: var(--mono); font-size: 0.95rem; background: var(--sheet); border: 1px solid var(--rule); border-left: 4px solid var(--ink); padding: 12px 16px; margin: 16px 0; overflow-x: auto; white-space: pre; }
+.formula { font-size: 0.9rem; background: var(--panel); border: 1px solid var(--rule); padding: 12px 16px; margin: 16px 0; overflow-x: auto; white-space: pre; }
 
-.signoff { margin-top: 56px; padding-top: 24px; border-top: 1px solid var(--rule); }
-.signature { font-family: var(--hand); font-size: 2.4rem; color: var(--ink); line-height: 1; margin: 8px 0 0; }
-.fine { font-size: 0.82rem; color: var(--muted); max-width: 72ch; }
+.signoff { margin-top: 56px; padding-top: 24px; border-top: 1px dashed var(--rule); }
+.signature { font-size: 1rem; margin: 8px 0 0; line-height: 1.5; }
+.signature::before { content: "--\A"; white-space: pre; color: var(--dim); }
+.fine { font-size: 0.78rem; color: var(--dim); max-width: 76ch; }
+.fine::before { content: "This message and any attachments are confidential and intended solely for the addressee. "; }
 </style>
 
 <div class="frame">
@@ -160,11 +154,13 @@ td.n.minus { color: var(--note); }
 
   <main>
     <header class="memo">
-      <div class="memo-head"><span>Hockeystick Capital · Portfolio Operations</span><span class="stamp">Confidential · Not for LPs</span></div>
+      <div class="memo-head"><span>Hockeystick Capital · Portfolio Ops · Exchange export</span><span class="stamp">Confidential · Not for LPs</span></div>
       <dl class="routing">
-        <dt>To</dt><dd>Founder (you)</dd>
-        <dt>From</dt><dd>Gideon Thrust, Managing Partner</dd>
-        <dt>Re</dt><dd>Applied Bureaucratics: scaling compute from one clerk to a god</dd>
+        <dt>From</dt><dd>Gideon Thrust &lt;gideon@hockeystick-capital.example&gt;</dd>
+        <dt>Sent</dt><dd>Friday, 27 November 2026 04:12</dd>
+        <dt>To</dt><dd>Founder &lt;you@your-startup.example&gt;</dd>
+        <dt>Cc</dt><dd><span class="redact">Name withheld for legal reasons</span></dd>
+        <dt>Subject</dt><dd>Applied Bureaucratics: scaling compute from one clerk to a god</dd>
         <dt>Pack</dt><dd>GregTech: New Horizons, with our fork of Applied Energistics 2</dd>
       </dl>
       <h1>The Founder's Manual<span class="sub">Everything you need to know about compute, and nothing your employees need to know</span></h1>
@@ -522,8 +518,8 @@ re-verifying  = 20 % × (1 − training) chance per finished plan</div>
 
       <div class="signoff">
         <p>That's the playbook.  Build the Desk this week.  I want a Mainframe by the next board meeting.  And kid, pay your people.</p>
-        <p class="signature">Gideon Thrust</p>
-        <p class="fine">Managing Partner, Hockeystick Capital (a fictional fund).  Applied Bureaucratics is a satirical add-on for GregTech: New Horizons and is not part of the GTNH project.  It needs a build of Applied-Energistics-2-NH with the compute policy hooks.  The mod and this manual were written by an AI coding agent (Claude).  Screenshots are from the showcase world, on the 2.10 daily.</p>
+        <p class="signature">Gideon Thrust<br>Managing Partner, Hockeystick Capital<br>Sent from my yacht</p>
+        <p class="fine">Hockeystick Capital is a fictional fund.  Applied Bureaucratics is a satirical add-on for GregTech: New Horizons and is not part of the GTNH project.  It needs a build of Applied-Energistics-2-NH with the compute policy hooks.  The mod and this manual were written by an AI coding agent (Claude).  Screenshots are from the showcase world, on the 2.10 daily.</p>
       </div>
     </section>
   </main>
