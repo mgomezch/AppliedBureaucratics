@@ -245,6 +245,11 @@ def main():
     rect(pad, 3, 3, 12, 12, (230, 200, 40, 255))
     rect(pad, 5, 5, 10, 10, (40, 40, 45, 255))
     png(f"{OUT}/blocks/docking_pad.png", pad)
+    rack = casing((40, 44, 50, 255), (20, 22, 26, 255), (70, 74, 80, 255))
+    for y in (3, 6, 9, 12):
+        rect(rack, 3, y, 12, y + 1, (25, 28, 32, 255))
+        rack[y][11] = [60, 255, 120, 255]
+    png(f"{OUT}/blocks/accelerator_rack.png", rack)
     up = small_item((40, 120, 60, 255), lambda c: rect(c, 5, 5, 10, 10, (230, 200, 40, 255)))
     png(f"{OUT}/items/requisition_upgrade.png", up)
     png(f"{OUT}/blocks/OVERLAY_FRONT_MAINFRAME.png", screen_overlay(False))

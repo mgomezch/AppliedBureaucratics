@@ -19,6 +19,10 @@ public interface IComputeGrid extends IGridCache {
     /// Whether any plan is being calculated on this network.
     boolean hasPlansInProgress();
 
+    /// The chance that a plan finished on this network is re-verified: the hallucination chance of its Data Centers
+    /// while they supply most of its planning, else 0. See Note [The Data Center].
+    double hallucinationChance();
+
     /// Counts steps charged to this network, to share among its facilities for paper.
     void charge(double steps);
 }

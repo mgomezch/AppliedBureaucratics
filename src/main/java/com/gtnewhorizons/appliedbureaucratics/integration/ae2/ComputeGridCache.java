@@ -31,6 +31,7 @@ public class ComputeGridCache implements IComputeGrid {
     private final PlanningPool<ICraftingPlanningJob> pool = new PlanningPool<>();
     private int ticks;
     private double charged;
+    private double hallucination;
 
     public ComputeGridCache(final IGrid grid) {
         this.grid = grid;
@@ -52,6 +53,11 @@ public class ComputeGridCache implements IComputeGrid {
     }
 
     @Override
+    public double hallucinationChance() {
+        return this.hallucination;
+    }
+
+    @Override
     public void charge(final double steps) {
         this.charged += steps;
     }
@@ -68,12 +74,18 @@ public class ComputeGridCache implements IComputeGrid {
         final List<Double> staffed = new ArrayList<>();
         double machines = 0;
         double total = 0;
+        double hallucinating = 0;
+        double weighted = 0;
         for (final IComputeFacility facility : this.facilities) {
             final double rate = facility.getPlanningRate();
             if (rate <= 0) {
                 continue;
             }
             total += rate;
+            if (facility.hallucinationChance() > 0) {
+                hallucinating += rate;
+                weighted += rate * facility.hallucinationChance();
+            }
             if (facility.isStaffed()) {
                 staffed.add(rate);
             } else {
@@ -92,6 +104,7 @@ public class ComputeGridCache implements IComputeGrid {
             }
         }
         this.pool.setRate(PlanningPool.networkRate(staffed, machines));
+        this.hallucination = total > 0 && hallucinating * 2 >= total ? weighted / hallucinating : 0;
         this.pool.setUnmetered(legacy && ABConfig.legacyPlanningUnmetered);
         if (this.charged > 0 && total > 0) {
             for (final IComputeFacility facility : this.facilities) {

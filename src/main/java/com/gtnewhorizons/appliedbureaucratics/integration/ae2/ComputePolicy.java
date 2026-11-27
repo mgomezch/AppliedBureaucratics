@@ -28,6 +28,8 @@ public final class ComputePolicy implements ICraftingComputePolicy {
     /// of Note [The compute model].
     private record StandingKey(IAEStack<?> output, Object requester) {}
 
+    private static final java.util.Random RANDOM = new java.util.Random();
+
     private static @Nullable IComputeGrid compute(final ICraftingPlanningJob job) {
         final IGrid grid = job.getPlanningGrid();
         return grid == null ? null : grid.getCache(IComputeGrid.class);
@@ -81,6 +83,12 @@ public final class ComputePolicy implements ICraftingComputePolicy {
         final IComputeGrid compute = compute(job);
         if (compute != null) {
             final boolean completed = !(job instanceof Future<?>future) || !future.isCancelled();
+            // A plan the Data Centers calculated may be re-verified, charged as its steps again. The plan itself is
+            // always the right one. See Note [The Data Center].
+            if (completed && RANDOM.nextDouble() < compute.hallucinationChance()) {
+                compute.getPlanningPool()
+                    .report(job, request(job), job.getPlanningStepsTaken(), true);
+            }
             compute.getPlanningPool()
                 .ended(job, completed);
         }
@@ -102,7 +110,8 @@ public final class ComputePolicy implements ICraftingComputePolicy {
         if (pool.getCredit() < 0) {
             return new ChatComponentTranslation("ab.planning.overtime", (long) Math.ceil(-pool.getCredit()));
         }
-        final String key = pool.isStandingOrder(job) ? "ab.planning.standingOrder" : "ab.planning.rate";
+        final String key = compute.hallucinationChance() > 0 ? "ab.planning.confident"
+            : pool.isStandingOrder(job) ? "ab.planning.standingOrder" : "ab.planning.rate";
         return new ChatComponentTranslation(
             key,
             job.getPlanningStepsTaken(),

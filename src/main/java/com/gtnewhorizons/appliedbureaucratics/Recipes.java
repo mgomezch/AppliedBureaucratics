@@ -131,6 +131,31 @@ final class Recipes {
             new Object[] { "PPP", "RMR", 'P', OrePrefixes.plate.get(Materials.StainlessSteel), 'R',
                 ItemList.Robot_Arm_EV, 'M', new ItemStack(ModBlocks.casing, 1, Casing.MAINFRAME.meta()) });
         GTModHandler.addCraftingRecipe(
+            ItemComponent.Kind.ACCELERATOR_CARD.stack(1),
+            bits,
+            new Object[] { "CPC", "PBP", "CPC", 'C', OrePrefixes.circuit.get(Materials.LuV), 'P',
+                OrePrefixes.plate.get(Materials.Silicon), 'B', ItemList.Circuit_Board_Elite });
+        GTModHandler.addCraftingRecipe(
+            new ItemStack(ModBlocks.acceleratorRack),
+            bits,
+            new Object[] { "PCP", "P P", "PCP", 'P', OrePrefixes.plate.get(Materials.Aluminium), 'C',
+                OrePrefixes.cableGt01.get(Materials.Platinum) });
+        GTModHandler.addCraftingRecipe(
+            new ItemStack(ModBlocks.casing, 4, Casing.DATA_HALL.meta()),
+            bits,
+            new Object[] { "PPP", "PFP", "PPP", 'P', OrePrefixes.plate.get(Materials.Aluminium), 'F',
+                OrePrefixes.frameGt.get(Materials.Aluminium) });
+        GTModHandler.addCraftingRecipe(
+            new ItemStack(ModBlocks.casing, 4, Casing.RAISED_FLOOR.meta()),
+            bits,
+            new Object[] { "PPP", "R R", "PPP", 'P', OrePrefixes.plate.get(Materials.Aluminium), 'R',
+                OrePrefixes.pipeMedium.get(Materials.StainlessSteel) });
+        GTModHandler.addCraftingRecipe(
+            ModMetaTileEntities.dataCenter,
+            bits,
+            new Object[] { "CAC", "AHA", "CAC", 'C', OrePrefixes.circuit.get(Materials.LuV), 'A',
+                ItemComponent.Kind.ACCELERATOR_CARD.stack(1), 'H', ItemList.Hull_LuV });
+        GTModHandler.addCraftingRecipe(
             ItemComponent.Kind.DISK_ARRAY.stack(1),
             bits,
             new Object[] { "HHH", "HCH", "HHH", 'H', ItemComponent.Kind.HIGH_DENSITY_TAPE_REEL.stack(1), 'C',

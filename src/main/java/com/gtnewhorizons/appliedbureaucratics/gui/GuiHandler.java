@@ -13,6 +13,7 @@ public class GuiHandler implements IGuiHandler {
 
     public static final int REQUISITION_TRAY = 0;
     public static final int BREAK_ROOM_COUNTER = 1;
+    public static final int INVENTORY = 2;
 
     @Override
     public Object getServerGuiElement(final int id, final EntityPlayer player, final World world, final int x,
@@ -23,6 +24,9 @@ public class GuiHandler implements IGuiHandler {
         }
         if (id == BREAK_ROOM_COUNTER && te instanceof TileBreakRoomCounter counter) {
             return new ContainerSimple(player.inventory, counter);
+        }
+        if (id == INVENTORY && te instanceof net.minecraft.inventory.IInventory inventory) {
+            return new ContainerSimple(player.inventory, inventory);
         }
         return null;
     }
@@ -40,6 +44,14 @@ public class GuiHandler implements IGuiHandler {
                 counter,
                 "tile.appliedbureaucratics.break_room_counter.name",
                 "ab.gui.breakroom");
+        }
+        if (id == INVENTORY && te instanceof net.minecraft.inventory.IInventory inventory) {
+            return new GuiSimple(
+                player.inventory,
+                inventory,
+                te.getBlockType()
+                    .getUnlocalizedName() + ".name",
+                null);
         }
         return null;
     }

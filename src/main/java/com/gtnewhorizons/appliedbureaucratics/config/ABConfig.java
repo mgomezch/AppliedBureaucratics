@@ -47,6 +47,13 @@ public final class ABConfig {
     public static long internetFilingCap = 16L << 20;
     public static int gigOpsPerEmerald = 512;
 
+    // The Data Center.
+    public static int dataCenterMaxLength = 31;
+    public static int dataCenterSlots = 8;
+    public static long dataCenterFiling = 64L << 20;
+    public static double dataCenterFtePerCard = 0.128;
+    public static int dataCenterPollution = 2000;
+
     // The break room.
     public static double breakRoomRange = 16;
     public static int coffeeWorkerDays = 4;
@@ -134,6 +141,17 @@ public final class ABConfig {
         internetFilingCap = c.get("internet", "filingCap", (int) internetFilingCap, "The Internet's Filing cap.")
             .getInt();
         gigOpsPerEmerald = c.get("internet", "gigOpsPerEmerald", gigOpsPerEmerald, "Gig operations an emerald pays.")
+            .getInt();
+        final String dc = "datacenter";
+        dataCenterMaxLength = c.get(dc, "maxLength", dataCenterMaxLength, "Longest hall, end walls included.")
+            .getInt();
+        dataCenterSlots = c.get(dc, "slots", dataCenterSlots, "Job slots a hall.")
+            .getInt();
+        dataCenterFiling = c.get(dc, "filing", (int) dataCenterFiling, "Filing a hall, in bytes.")
+            .getInt();
+        dataCenterFtePerCard = c.get(dc, "ftePerCard", dataCenterFtePerCard, "Synthetic FTE per Accelerator Card.")
+            .getDouble();
+        dataCenterPollution = c.get(dc, "pollution", dataCenterPollution, "Pollution a second at full load.")
             .getInt();
         breakRoomRange = c.get("breakroom", "range", breakRoomRange, "How far a Break Room Counter serves.")
             .getDouble();

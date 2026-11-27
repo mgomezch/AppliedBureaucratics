@@ -19,6 +19,12 @@ public interface IComputeFacility {
     /// The planning steps the network charged to this facility over the last second, for its paper.
     default void planningCharged(final double steps) {}
 
+    /// The chance that a plan this facility calculated most of is re-verified: a Data Center's hallucinations. See
+    /// Note [The Data Center].
+    default double hallucinationChance() {
+        return 0;
+    }
+
     /// Lines for `/ab status`: the bottleneck first, then the figures.
     default List<String> statusLines() {
         return Collections.emptyList();

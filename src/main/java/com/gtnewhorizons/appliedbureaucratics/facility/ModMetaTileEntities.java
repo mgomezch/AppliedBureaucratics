@@ -2,6 +2,7 @@ package com.gtnewhorizons.appliedbureaucratics.facility;
 
 import net.minecraft.item.ItemStack;
 
+import com.gtnewhorizons.appliedbureaucratics.facility.datacenter.MTEDataCenter;
 import com.gtnewhorizons.appliedbureaucratics.facility.internet.MTEInternet;
 import com.gtnewhorizons.appliedbureaucratics.facility.mainframe.MTEMainframe;
 
@@ -16,11 +17,13 @@ public final class ModMetaTileEntities {
 
     public static ItemStack mainframe;
     public static ItemStack internet;
+    public static ItemStack dataCenter;
 
     private ModMetaTileEntities() {}
 
     public static void init() {
         mainframe = new MTEMainframe(ID_MAINFRAME, "multimachine.ab.mainframe", "Mainframe").getStackForm(1);
         internet = new MTEInternet(ID_INTERNET, "multimachine.ab.internet", "The Internet").getStackForm(1);
+        dataCenter = new MTEDataCenter(ID_DATA_CENTER, "multimachine.ab.datacenter", "AI Data Center").getStackForm(1);
     }
 }

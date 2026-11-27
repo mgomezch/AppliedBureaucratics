@@ -35,6 +35,40 @@ public class BlockSimpleTile extends BlockContainer {
         return this.tile.get();
     }
 
+    /// A tile that is an inventory opens a plain screen of its slots.
+    @Override
+    public boolean onBlockActivated(final World world, final int x, final int y, final int z,
+        final net.minecraft.entity.player.EntityPlayer player, final int side, final float hitX, final float hitY,
+        final float hitZ) {
+        if (player.isSneaking() || !(world.getTileEntity(x, y, z) instanceof net.minecraft.inventory.IInventory)) {
+            return false;
+        }
+        if (!world.isRemote) {
+            player.openGui(
+                AppliedBureaucratics.instance,
+                com.gtnewhorizons.appliedbureaucratics.gui.GuiHandler.INVENTORY,
+                world,
+                x,
+                y,
+                z);
+        }
+        return true;
+    }
+
+    @Override
+    public void breakBlock(final World world, final int x, final int y, final int z,
+        final net.minecraft.block.Block block, final int meta) {
+        if (world.getTileEntity(x, y, z) instanceof net.minecraft.inventory.IInventory inventory) {
+            for (int i = 0; i < inventory.getSizeInventory(); i++) {
+                final net.minecraft.item.ItemStack stack = inventory.getStackInSlot(i);
+                if (stack != null) {
+                    this.dropBlockAsItem(world, x, y, z, stack);
+                }
+            }
+        }
+        super.breakBlock(world, x, y, z, block, meta);
+    }
+
     @Override
     @SideOnly(Side.CLIENT)
     public void registerBlockIcons(final IIconRegister register) {

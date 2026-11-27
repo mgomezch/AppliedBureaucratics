@@ -109,3 +109,6 @@ item.appliedbureaucratics.requisition_upgrade.name=Requisition Upgrade
 item.appliedbureaucratics.requisition_upgrade.tooltip=For OpenComputers robots. Stand on a Docking Pad and call work().\nThe workerd floppy does the rest.
 tile.appliedbureaucratics.docking_pad.name=Docking Pad
 tile.appliedbureaucratics.docking_pad.tooltip=On a linked Mainframe's terminal network. A robot on it with a Requisition Upgrade clocks in.
+tile.appliedbureaucratics.accelerator_rack.name=Accelerator Rack
+tile.appliedbureaucratics.accelerator_rack.tooltip=Part of a Data Center hall. Holds four Accelerator Cards.
+ab.planning.confident=The model is very confident: %s steps at %s steps/s.
