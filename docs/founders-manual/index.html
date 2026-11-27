@@ -1,0 +1,530 @@
+<title>The Founder's Manual</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=Caveat:wght@500;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<style>
+/* Layout: a fund's confidential founder memo.  A sticky "cap table" of rounds on the left, one reading column, wide
+   figures, and the partner's highlighter notes in the margin. */
+:root {
+  --paper: #eef1f6;
+  --sheet: #ffffff;
+  --ink: #121a31;
+  --muted: #56607a;
+  --rule: #d3d9e4;
+  --accent: #2340d0;
+  --accent-ink: #ffffff;
+  --marker: #ffe14a;
+  --marker-ink: #121a31;
+  --note: #b3261e;
+  --code-bg: #e6eaf2;
+  --display: "Archivo", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
+  --body: "IBM Plex Sans", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --hand: "Caveat", "Segoe Print", "Bradley Hand", cursive;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #0d1222; --sheet: #141b31; --ink: #e5e9f3; --muted: #9aa4bd; --rule: #29334f;
+    --accent: #8197ff; --accent-ink: #0d1222; --marker: #d9b72a; --marker-ink: #0d1222; --note: #ff8a80;
+    --code-bg: #1c2541; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #0d1222; --sheet: #141b31; --ink: #e5e9f3; --muted: #9aa4bd; --rule: #29334f;
+  --accent: #8197ff; --accent-ink: #0d1222; --marker: #d9b72a; --marker-ink: #0d1222; --note: #ff8a80;
+  --code-bg: #1c2541; color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+body {
+  background: var(--paper); color: var(--ink); font-family: var(--body); font-size: 1.0625rem; line-height: 1.6;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+a { color: var(--accent); text-underline-offset: 0.15em; }
+a:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 2px; }
+code, kbd { font-family: var(--mono); font-size: 0.88em; background: var(--code-bg); padding: 0.05em 0.35em; border-radius: 3px; }
+mark { background: linear-gradient(transparent 12%, var(--marker) 12%, var(--marker) 88%, transparent 88%); color: var(--marker-ink); padding: 0 0.1em; }
+
+.frame { max-width: 1180px; margin: 0 auto; padding-block: 32px 64px; display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 48px; }
+@media (max-width: 900px) { .frame { grid-template-columns: minmax(0, 1fr); gap: 24px; } }
+
+/* The cap table of rounds. */
+.rounds { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 24px); align-self: start; font-family: var(--display); }
+.rounds h2 { font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); margin: 0 0 12px; font-weight: 600; }
+.rounds ol { list-style: none; margin: 0; padding: 0; border-left: 2px solid var(--rule); }
+.rounds li a { display: grid; grid-template-columns: 3.2em 1fr; gap: 6px; padding: 6px 0 6px 12px; margin-left: -2px; border-left: 2px solid transparent; color: var(--ink); text-decoration: none; font-stretch: 90%; line-height: 1.25; }
+.rounds li a:hover { border-left-color: var(--accent); }
+.rounds .tier { font-family: var(--mono); font-size: 0.78rem; color: var(--muted); padding-top: 2px; }
+.rounds .name { font-weight: 650; font-size: 0.95rem; }
+.rounds .name small { display: block; font-weight: 400; color: var(--muted); font-size: 0.78rem; font-family: var(--body); }
+@media (max-width: 900px) {
+  .rounds { position: static; }
+  .rounds ol { display: flex; flex-wrap: wrap; gap: 4px 16px; border-left: 0; }
+  .rounds li a { border-left: 0; padding: 4px 0; margin: 0; grid-template-columns: auto auto; }
+  .rounds .name small { display: none; }
+}
+
+main { min-width: 0; }
+
+/* The memo header. */
+.memo { background: var(--sheet); border: 1px solid var(--rule); padding: 28px clamp(18px, 4vw, 44px) 32px; }
+.memo-head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 24px; font-family: var(--display); font-size: 0.74rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); font-weight: 600; border-bottom: 1px solid var(--rule); padding-bottom: 12px; }
+.memo-head .stamp { color: var(--note); border: 1.5px solid currentColor; padding: 1px 8px; transform: rotate(-2deg); }
+.routing { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 2px 16px; font-family: var(--mono); font-size: 0.86rem; margin: 16px 0 24px; }
+.routing dt { color: var(--muted); }
+.routing dd { margin: 0; }
+h1 { font-family: var(--display); font-stretch: 112%; font-weight: 850; font-size: clamp(2.4rem, 6.4vw, 4.6rem); line-height: 0.95; letter-spacing: -0.01em; margin: 0 0 18px; text-wrap: balance; }
+h1 .sub { display: block; font-stretch: 75%; font-weight: 500; font-size: 0.36em; letter-spacing: 0.02em; color: var(--accent); margin-top: 10px; line-height: 1.2; }
+.lede { font-size: 1.2rem; line-height: 1.55; max-width: 62ch; margin: 0 0 12px; }
+.memo p { max-width: 66ch; }
+
+/* The round strip: the order of the rounds is the point. */
+.strip { list-style: none; margin: 28px 0 0; padding: 0; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 0; counter-reset: r; }
+.strip li { border-top: 3px solid var(--ink); padding: 10px 10px 0 0; position: relative; }
+.strip li::before { content: ""; position: absolute; top: -8px; left: 0; width: 13px; height: 13px; border-radius: 50%; background: var(--sheet); border: 3px solid var(--ink); }
+.strip li.exit { border-top-color: var(--accent); }
+.strip li.exit::before { background: var(--accent); border-color: var(--accent); }
+.strip .t { font-family: var(--mono); font-size: 0.76rem; color: var(--muted); display: block; margin-top: 6px; }
+.strip .r { font-family: var(--display); font-weight: 750; font-stretch: 85%; font-size: 1rem; display: block; line-height: 1.15; }
+.strip .f { font-size: 0.82rem; color: var(--muted); display: block; line-height: 1.3; margin-top: 2px; }
+@media (max-width: 720px) { .strip { grid-template-columns: repeat(3, minmax(0, 1fr)); row-gap: 20px; } }
+@media (max-width: 420px) { .strip { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+/* Sections. */
+section { padding-top: 56px; }
+.kicker { font-family: var(--display); font-size: 0.76rem; letter-spacing: 0.16em; text-transform: uppercase; font-weight: 650; color: var(--accent); margin: 0 0 6px; }
+h2 { font-family: var(--display); font-stretch: 100%; font-weight: 800; font-size: clamp(1.7rem, 3.4vw, 2.4rem); line-height: 1.05; margin: 0 0 16px; text-wrap: balance; }
+h3 { font-family: var(--display); font-weight: 700; font-stretch: 92%; font-size: 1.2rem; margin: 32px 0 8px; }
+section p, section li { max-width: 66ch; }
+section ul, section ol { padding-left: 1.3em; }
+section li + li { margin-top: 4px; }
+
+/* The partner's voice: a pull-quote set in the display face, with a handwritten aside. */
+.take { border-left: 4px solid var(--accent); padding: 4px 0 4px 18px; margin: 0 0 24px; max-width: 64ch; }
+.take p { font-family: var(--display); font-stretch: 88%; font-size: 1.22rem; line-height: 1.4; font-weight: 520; margin: 0; }
+.take p + p { margin-top: 8px; }
+.aside { font-family: var(--hand); font-size: 1.45rem; line-height: 1.15; color: var(--note); margin: 18px 0; max-width: 40ch; transform: rotate(-1deg); }
+.aside::before { content: "\2014\00a0GT: "; font-weight: 700; }
+
+/* Figures. */
+figure { margin: 24px 0; }
+figure img { display: block; width: 100%; height: auto; border: 1px solid var(--rule); background: var(--sheet); image-rendering: auto; }
+figcaption { font-size: 0.86rem; color: var(--muted); margin-top: 8px; max-width: 70ch; }
+figcaption b { color: var(--ink); font-weight: 600; }
+.pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; align-items: start; }
+.pair figure { margin: 0; }
+.pair.narrow-wide { grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); }
+@media (max-width: 640px) { .pair, .pair.narrow-wide { grid-template-columns: minmax(0, 1fr); } }
+.figrow { margin: 24px 0; }
+
+/* Tables: the term sheet look. */
+.tbl { overflow-x: auto; margin: 16px 0 24px; border: 1px solid var(--rule); background: var(--sheet); }
+table { border-collapse: collapse; width: 100%; font-size: 0.94rem; font-variant-numeric: tabular-nums; }
+th, td { text-align: left; vertical-align: top; padding: 9px 12px; border-bottom: 1px solid var(--rule); }
+thead th { font-family: var(--display); font-weight: 700; font-size: 0.74rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); background: var(--paper); }
+tbody tr:last-child td { border-bottom: 0; }
+td.n { font-family: var(--mono); white-space: nowrap; }
+td.n.plus { color: var(--accent); }
+td.n.minus { color: var(--note); }
+
+/* Build lists: what goes where. */
+.build { background: var(--sheet); border: 1px solid var(--rule); padding: 16px 20px; margin: 16px 0 24px; }
+.build h4 { font-family: var(--display); font-size: 0.76rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); margin: 0 0 8px; font-weight: 650; }
+.build ul { margin: 0; }
+
+.formula { font-family: var(--mono); font-size: 0.95rem; background: var(--sheet); border: 1px solid var(--rule); border-left: 4px solid var(--ink); padding: 12px 16px; margin: 16px 0; overflow-x: auto; white-space: pre; }
+
+.signoff { margin-top: 56px; padding-top: 24px; border-top: 1px solid var(--rule); }
+.signature { font-family: var(--hand); font-size: 2.4rem; color: var(--ink); line-height: 1; margin: 8px 0 0; }
+.fine { font-size: 0.82rem; color: var(--muted); max-width: 72ch; }
+</style>
+
+<div class="frame">
+  <nav class="rounds" aria-label="Rounds">
+    <h2>Cap table</h2>
+    <ol>
+      <li><a href="#thesis"><span class="tier">—</span><span class="name">The thesis<small>How compute works</small></span></a></li>
+      <li><a href="#desk"><span class="tier">HV</span><span class="name">Pre-seed<small>The Desk</small></span></a></li>
+      <li><a href="#people"><span class="tier">HV+</span><span class="name">Human capital<small>Hiring, wages, morale</small></span></a></li>
+      <li><a href="#mainframe"><span class="tier">EV</span><span class="name">Series A<small>The Mainframe</small></span></a></li>
+      <li><a href="#internet"><span class="tier">IV</span><span class="name">Series B<small>The Internet</small></span></a></li>
+      <li><a href="#datacenter"><span class="tier">LuV</span><span class="name">Series C<small>The AI Data Center</small></span></a></li>
+      <li><a href="#legacy"><span class="tier">ZPM</span><span class="name">Legacy assets<small>Stock crafting CPUs</small></span></a></li>
+      <li><a href="#singularity"><span class="tier">UV</span><span class="name">The exit<small>The Singularity</small></span></a></li>
+      <li><a href="#diligence"><span class="tier">—</span><span class="name">Due diligence<small>Commands, fixes, config</small></span></a></li>
+    </ol>
+  </nav>
+
+  <main>
+    <header class="memo">
+      <div class="memo-head"><span>Hockeystick Capital · Portfolio Operations</span><span class="stamp">Confidential · Not for LPs</span></div>
+      <dl class="routing">
+        <dt>To</dt><dd>Founder (you)</dd>
+        <dt>From</dt><dd>Gideon Thrust, Managing Partner</dd>
+        <dt>Re</dt><dd>Applied Bureaucratics: scaling compute from one clerk to a god</dd>
+        <dt>Pack</dt><dd>GregTech: New Horizons, with our fork of Applied Energistics 2</dd>
+      </dl>
+      <h1>The Founder's Manual<span class="sub">Everything you need to know about compute, and nothing your employees need to know</span></h1>
+      <p class="lede">Kid, you came to me with an ME network and a dream.  Here's the market reality: in this pack, AE2 autocrafting needs <b>compute</b>.  Somebody has to work out every crafting plan, file it while it runs, and hand its tasks out to your machines.  That somebody used to be free.  Free is over.</p>
+      <p>This manual is how you build that somebody, one funding round per voltage tier, from a villager at a desk to a thing at UV that we do not mention on earnings calls.  Every number in here is real.  I don't do vibes.</p>
+      <ol class="strip" aria-label="The rounds, in order">
+        <li><span class="t">HV</span><span class="r">Pre-seed</span><span class="f">The Desk: one clerk</span></li>
+        <li><span class="t">EV</span><span class="r">Series A</span><span class="f">The Mainframe and its office</span></li>
+        <li><span class="t">IV</span><span class="r">Series B</span><span class="f">The Internet, gigs and bots</span></li>
+        <li><span class="t">LuV</span><span class="r">Series C</span><span class="f">The AI Data Center</span></li>
+        <li><span class="t">ZPM</span><span class="r">Legacy</span><span class="f">Stock CPUs, weakened</span></li>
+        <li class="exit"><span class="t">UV</span><span class="r">Exit</span><span class="f">The Singularity</span></li>
+      </ol>
+    </header>
+
+    <!-- ===================================================================== -->
+    <section id="thesis">
+      <p class="kicker">The thesis</p>
+      <h2>You sell three things.  Know them cold.</h2>
+      <div class="take">
+        <p>Every great company sells one thing.  You sell three, and if you can't name them at a board meeting I will replace you with an Enderman.</p>
+      </div>
+      <p>Each facility you build is a crafting CPU on your ME network, and it supplies three capacities:</p>
+      <div class="tbl"><table>
+        <thead><tr><th>Capacity</th><th>Unit</th><th>What it limits</th><th>Whose is it</th><th>Comes from</th></tr></thead>
+        <tbody>
+          <tr><td><b>Planning</b></td><td class="n">steps/s</td><td>How fast a crafting plan is worked out</td><td>Pooled across the whole network</td><td>Workers' time, and paper</td></tr>
+          <tr><td><b>Filing</b></td><td class="n">bytes</td><td>The largest plan one job slot can hold</td><td>The facility running the job</td><td>Books, tape reels, disk arrays</td></tr>
+          <tr><td><b>Dispatch</b></td><td class="n">ops/s</td><td>How fast a running job hands out tasks (one op = one pattern pushed to one machine)</td><td>The facility running the job</td><td>Workers' time</td></tr>
+        </tbody>
+      </table></div>
+      <p>Output is measured in <b>FTE</b>, full-time equivalents.  A worker plans while its facility's slots are idle and dispatches while they're busy.  The conversion is fixed:</p>
+      <div class="formula">planning  = planning FTE × 4  steps/s     (pooled by the network)
+dispatch  = dispatch FTE × 1  ops/s       (per facility, per job)</div>
+
+      <h3>Plans take time now</h3>
+      <p>On the craft confirmation screen, while the plan is still calculating, <b>Start</b> reads <b>Queue</b>.  Press it and walk away.  The plan keeps calculating and shows up in the crafting status screen as <mark>Planning</mark>.  When it's ready it starts by itself on a free CPU, or waits as <i>Waiting for CPU</i>, and chat tells you when it starts.  Shift-clicking <b>Next</b> queues at once.  You can cancel a queued plan from the crafting status screen.</p>
+      <div class="pair">
+        <figure><img src="img/planning_status.jpg" alt="AE2 crafting status screen with a purple Planning entry for one netherrack under the Requisition Tray CPU" width="1100" height="714" loading="lazy"><figcaption><b>A plan in progress.</b>  It sits under the CPUs as a purple <i>Planning</i> entry, with the item it's for.</figcaption></figure>
+        <figure><img src="img/planning_tooltip.jpg" alt="Tooltip over the Planning entry: craft name 1 Netherrack, planning steps 6, planning rate 1 steps/s, requester" width="1100" height="714" loading="lazy"><figcaption><b>Hover it for the numbers:</b> steps left, the rate, and how many facilities are planning for it.</figcaption></figure>
+      </div>
+      <figure><img src="img/cpu_tooltip.jpg" alt="Tooltip over a busy CPU showing progress, bytes used and the dispatch rate" width="1100" height="714" loading="lazy"><figcaption><b>A busy CPU</b> shows its dispatch rate, and, while tasks are waiting on it, the rate it would need to start them all with no delay.  Bytes used are its Filing.</figcaption></figure>
+
+      <h3>Protective provisions</h3>
+      <p>I negotiated these into the term sheet myself.  They're why compute can slow you down but never burn you:</p>
+      <ul>
+        <li><b>Slowdown only.</b>  Nothing is lost, miscrafted or cancelled because of compute.  No soft factor (morale, paper, training) pushes a facility below 25&nbsp;% of its output.  A facility with no workers, power or structure is simply off, and its jobs wait.</li>
+        <li><b>Founders first.</b>  When players and machines both have plans in progress on a network, half of each tick's planning goes to the players' plans, so level maintainers can't starve the person at the terminal.</li>
+        <li><b>Standing orders.</b>  A request that repeats one of the network's last 64 (same output, same requester) is charged 10&nbsp;% of its steps.  Level-maintained bases stay playable.</li>
+        <li><b>Overtime.</b>  An AE2 caller that needs a plan immediately gets it, and the steps become debt that the network pays off before any other plan advances.</li>
+        <li><b>Committees.</b>  Several staffed facilities on one network plan by committee: their summed rate is divided by the square root of how many there are.  Machine facilities (the Data Center, the Singularity, stock CPUs) add up without the penalty.</li>
+      </ul>
+      <p class="aside">Read that last one twice.  Two desks are not twice one desk.  They never are.</p>
+    </section>
+
+    <!-- ===================================================================== -->
+    <section id="desk">
+      <p class="kicker">Pre-seed · HV</p>
+      <h2>The Desk.  Every unicorn started in a garage.</h2>
+      <div class="take">
+        <p>Sole proprietorship.  You are the IT department.  Sit down.</p>
+      </div>
+      <figure><img src="img/desk.jpg" alt="A villager seated at a BiblioCraft desk with a typewriter, bookshelves behind, an ME controller, drive and tray beside, and a Break Room Counter in the foreground" width="1280" height="720" loading="lazy"><figcaption><b>The showcase Desk.</b>  The tray and the ME station on the left; the clerk at a desk with a typewriter and bell; bookshelves for Filing; a Break Room Counter in the foreground.</figcaption></figure>
+      <div class="build">
+        <h4>Build it</h4>
+        <ul>
+          <li>A <b>Requisition Tray</b> on ME cable.  It's crafted around an HV machine hull and books.</li>
+          <li>A BiblioCraft <b>seat</b> within 2 blocks of the tray, with a BiblioCraft <b>desk</b> next to the seat.</li>
+          <li>A <b>typewriter</b> within a block of the seat.  No typewriter, no planning.</li>
+          <li>Optional: a <b>desk bell</b> within a block of the seat, for ×1.25 dispatch.</li>
+          <li><b>Bookcases</b> within 3 blocks: 64&nbsp;B of Filing per book, 192&nbsp;B per vanilla bookshelf, up to 8192&nbsp;B.</li>
+          <li><b>Paper</b> in the tray: one sheet covers 256 planning steps.  Without paper, planning runs at 25&nbsp;%.</li>
+          <li><b>Emeralds</b> in the tray pay wages.</li>
+        </ul>
+      </div>
+      <p>Then staff it.  <mark>Founder mode</mark>: sit on the seat yourself and you're the worker.  It's the cheapest hire you'll ever make and the least scalable.  When you're ready to delegate, read the next section.</p>
+      <div class="pair narrow-wide">
+        <figure><img src="img/tray_gui.jpg" alt="Requisition Tray window: Working, a contracted employee is at the desk, planning 6.0 steps/s, dispatch 0.0 ops/s, filing 0 of 1152 B, morale 61, paper and wages slots, coffee and pizza party" width="640" height="669" loading="lazy"><figcaption><b>The tray's window</b> is your one-page board deck: the bottleneck, who's working, the four figures, paper on the left, wages on the right, perks at the bottom.</figcaption></figure>
+        <figure><img src="img/nei_tray.jpg" alt="NEI shaped crafting recipe for the Requisition Tray" width="560" height="560" loading="lazy"><figcaption><b>The tray's recipe</b>, as NEI shows it in the showcase pack.</figcaption></figure>
+      </div>
+      <p>The top line of the window, and of <code>/ab status</code>, always names the one thing holding the facility back.  The full list of those, with fixes, is in <a href="#diligence">due diligence</a>.</p>
+    </section>
+
+    <!-- ===================================================================== -->
+    <section id="people">
+      <p class="kicker">Human capital</p>
+      <h2>People are our greatest asset.  Contractually.</h2>
+      <div class="take">
+        <p>We're like a family here.  A family with an Employment Contract, a payroll in emeralds, and a Pink Slip in the drawer.</p>
+      </div>
+      <h3>Hiring</h3>
+      <ol>
+        <li>Right-click a villager with an <b>Employment Contract</b>.  You get a <b>Signed Contract</b>: their file.</li>
+        <li>Right-click a seat with the Signed Contract.  The villager walks over, sits down and stays there.  Keep the file: it moves them again, from up to 32 blocks away.</li>
+        <li>To let someone go, use a <b>Pink Slip</b>.  We thank them for their contributions.</li>
+      </ol>
+      <p>Contracted workers on shift take no damage.  Profession matters:</p>
+      <div class="tbl"><table>
+        <thead><tr><th>Villager</th><th>Good at</th><th>Multiplier</th></tr></thead>
+        <tbody>
+          <tr><td>Librarian</td><td>Planning (analysts)</td><td class="n plus">×1.5 planning</td></tr>
+          <tr><td>Farmer</td><td>Dispatch (logistics)</td><td class="n plus">×1.5 dispatch</td></tr>
+          <tr><td>Priest</td><td>Both (forecasting is a matter of faith)</td><td class="n plus">×1.25 both</td></tr>
+          <tr><td>Everyone else</td><td>Showing up</td><td class="n">×1</td></tr>
+        </tbody>
+      </table></div>
+
+      <h3>Payroll</h3>
+      <p>Each worker earns one wage unit per day of uptime, and an emerald pays 8 units.  So one emerald covers one worker for 8 days, or 8 workers for one.  Miss payroll and the morale target drops by 40 points, the facility says <i>Limited by: wages unpaid</i>, and you'll deserve it.</p>
+
+      <h3>Morale</h3>
+      <p>Every facility has one morale number from 0 to 100.  It drifts one point a minute towards a target, and it scales output:</p>
+      <div class="formula">morale   0 → 25 % output
+morale  60 → 100 % output
+morale 100 → 120 % output</div>
+      <p>The target starts at 50 and moves like this:</p>
+      <div class="tbl"><table>
+        <thead><tr><th>Factor</th><th>Target</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td>Wages paid</td><td class="n plus">+10</td><td>Unpaid: <span class="n">−40</span></td></tr>
+          <tr><td>Amenities within 4 blocks of the seat</td><td class="n plus">up to +40</td><td>Light level 10 or more +5; a clock +5; a potted plant +5; a window with sky behind it +10; each poster or painting +1</td></tr>
+          <tr><td>Coffee</td><td class="n plus">+10</td><td>A stocked Break Room Counter within 16 blocks.  Cocoa beans count.  A cup lasts four worker-days.</td></tr>
+          <tr><td>Party</td><td class="n plus">+20</td><td>For a day after you put a cake or a pizza in the counter</td></tr>
+          <tr><td>Crowded</td><td class="n minus">−10</td><td>More than 6 seats in the 5 × 5 around the seat</td></tr>
+          <tr><td>Smog</td><td class="n minus">−5 to −20</td><td>−5 at the chunk's pollution smog threshold, up to −20 at four times it</td></tr>
+          <tr><td>Managers</td><td class="n minus">0 to −15 each</td><td>See the <a href="#managers">management table</a></td></tr>
+          <tr><td>Crunch</td><td class="n minus">−30</td><td>While crunch is on</td></tr>
+        </tbody>
+      </table></div>
+      <p><mark>Crunch</mark> is a redstone signal on the tray or the controller: output ×1.5, morale target −30.  It's worth it for about 25 minutes, until morale catches up with you.  Use it for a launch, not a lifestyle.</p>
+      <p class="aside">Coffee is cheaper than raises.  A pizza party is cheaper than coffee.</p>
+    </section>
+
+    <!-- ===================================================================== -->
+    <section id="mainframe">
+      <p class="kicker">Series A · EV</p>
+      <h2>The Mainframe.  Nobody ever got fired for buying one.</h2>
+      <div class="take">
+        <p>Now we're a real company.  Real hardware, a real office, and a real org chart.  Middle management is where scale goes to be multiplied or to die.</p>
+      </div>
+      <figure><img src="img/mainframe.jpg" alt="The Mainframe multiblock with its hatches and ME station, the office behind it under a roof, and the Internet tower on the left" width="1280" height="720" loading="lazy"><figcaption><b>The showcase Mainframe</b> from behind: the machine with its hatches and ME station in front, the office under its roof behind, the Internet tower on the left.</figcaption></figure>
+      <div class="build">
+        <h4>Build it</h4>
+        <ul>
+          <li>A 7 × 4 × 3 GregTech multiblock of Mainframe Casing, with a row of Tape Reel Windows.</li>
+          <li>Four OpenComputers <b>racks</b> beside the controller.  Their servers are its hardware: 8, 16 or 32 FTE for a tier 1, 2 or 3 server.  The office can't outwork its hardware.</li>
+          <li>A <b>Terminal Concentrator</b> in the middle of the back face.</li>
+          <li>Hatches anywhere on the casing: an EV energy hatch, a maintenance hatch, an input bus and an output bus.</li>
+        </ul>
+      </div>
+      <figure class="figrow"><img src="img/nei_mainframe.jpg" alt="NEI multiblock preview of the Mainframe" width="560" height="560" loading="lazy" style="max-width:420px"><figcaption><b>NEI shows the structure</b> on the Mainframe controller's multiblock tab.</figcaption></figure>
+      <p><b>The input bus</b> takes everything the Mainframe consumes or files with:</p>
+      <ul>
+        <li><b>Magnetic Tape Reels</b> (16&nbsp;KiB of Filing) and <b>High-Density Tape Reels</b> (64&nbsp;KiB), up to 1&nbsp;MiB.  They aren't consumed.</li>
+        <li>Paper, or <b>Punch Cards</b> at four sheets of planning each.</li>
+        <li>Emeralds for wages; ender pearls and gold ingots for managers.</li>
+        <li><b>Blank Data Tapes</b>: the Mainframe records a <b>Work Log</b> on one for every 1000 operations it dispatches, into the output bus.  Keep those.  Series C runs on them.</li>
+      </ul>
+
+      <h3>The office</h3>
+      <p>Put it wherever you like: OpenComputers screens on OC cable from the concentrator, each with a contracted worker seated within 2 blocks.  The concentrator powers the screens, up to 32 terminals.</p>
+      <figure><img src="img/office.jpg" alt="Villagers seated at OpenComputers screens, an Enderman team lead at a desk, glowstone in the floor under a roof" width="1280" height="720" loading="lazy"><figcaption><b>The office.</b>  Five librarians at their terminals and an Enderman team lead at his desk, under a roof with glowstone in the floor.</figcaption></figure>
+
+      <h3 id="managers">Management</h3>
+      <p>Unmanaged people don't cooperate.  A facility's FTE is the sum of its unmanaged units divided by the square root of how many there are.  A manager's team counts as the sum of its reports times the manager's efficiency, up to 8 reports.  Managers produce nothing.  They are required.</p>
+      <div class="formula">5 librarians, unmanaged:       (1+1+1+1+1) / √5 = 2.24 FTE
+the same 5 under an Enderman:  (1+1+1+1+1) × 0.80 = 4.00 FTE</div>
+      <p>Those are the showcase office's real figures.  A manager needs a seat with a BiblioCraft desk and bell next to it, and a <b>Management Contract</b> instead of an Employment Contract.</p>
+      <div class="tbl"><table>
+        <thead><tr><th>Role</th><th>Who</th><th>Manages</th><th>Efficiency</th><th>Morale</th><th>Upkeep</th></tr></thead>
+        <tbody>
+          <tr><td>Team lead</td><td>Enderman</td><td>8 workers within 12 blocks</td><td class="n">0.80</td><td class="n">0</td><td>An ender pearl a day</td></tr>
+          <tr><td>Team lead</td><td>Crimson Cleric (Thaumcraft)</td><td>8 workers within 12 blocks</td><td class="n">0.90</td><td class="n minus">−5</td><td>A gold ingot a day</td></tr>
+          <tr><td>Team lead, executive</td><td>Tamed demon (Blood Magic)</td><td>8 workers within 12 blocks</td><td class="n">1.00</td><td class="n minus">−10</td><td>100 LP a minute</td></tr>
+          <tr><td>Director</td><td>A boss: a Wither, or a Twilight Forest boss</td><td>8 team leads within 24 blocks</td><td class="n">0.95</td><td class="n minus">−15</td><td>A diamond a day</td></tr>
+        </tbody>
+      </table></div>
+      <p>Any mob with a boss bar can direct, and so can the Twilight Forest bosses that have none (the Naga, the Lich, the Minoshroom, the Hydra, the Knight Phantoms, the Ur-Ghast, the Alpha Yeti and the Snow Queen).  Unpaid managers work at half efficiency.  Keep Endermen under a roof: they teleport in daylight until they're seated.</p>
+      <p class="aside">My door is always open.  It is not a door.</p>
+    </section>
+
+    <!-- ===================================================================== -->
+    <section id="internet">
+      <p class="kicker">Series B · IV</p>
+      <h2>The Internet.  It's web scale.</h2>
+      <div class="take">
+        <p>One office is a company.  Several offices on a backbone is a platform, and platforms get the multiples.</p>
+      </div>
+      <div class="pair">
+        <figure><img src="img/internet.jpg" alt="A tall tower of tube casing with steel frame corners and a dish on top" width="1280" height="720" loading="lazy"><figcaption><b>The Internet</b>: a 5 × 5 × 9 tower, with its two Mainframes in the background.</figcaption></figure>
+        <figure><img src="img/gig.jpg" alt="A Gig Kiosk beside a fenced pen of villagers" width="1280" height="720" loading="lazy"><figcaption><b>The gig economy</b>: a Gig Kiosk and four enrolled villagers in a pen.</figcaption></figure>
+      </div>
+      <div class="build">
+        <h4>Build it</h4>
+        <ul>
+          <li>A 5 × 5 × 9 tower of Tube Casing with steel frame corners, a Backbone Core up the middle, and a Satellite Dish on top that must see the sky.</li>
+          <li><b>Router Ports</b> in its walls.  Run OC cable from each one to a Mainframe's terminal network: each port links one Mainframe.</li>
+          <li><b>Disk Arrays</b> in its input bus: 256&nbsp;KiB of Filing each, up to 16&nbsp;MiB.</li>
+        </ul>
+      </div>
+      <p>Linked Mainframes plan as one and pool their dispatch, and the Internet gets <b>one job slot per linked Mainframe</b>, so it runs several jobs at once.  Without an executive, one job can only use one Mainframe's Filing.  Seat a tamed demon in the <b>boardroom</b> (a manager's office within 6 blocks of the controller) and a job can file across all of them.</p>
+      <h3>Gig workers</h3>
+      <p>A <b>Gig Kiosk</b> within 32 blocks of the Internet enrols every uncontracted villager within 16 blocks of the kiosk.  Each one adds half an FTE of dispatch, about half the time.  They're paid per operation, 512 operations per emerald, from the Internet's input bus.  They agreed to the Terms of Service by standing there.</p>
+      <h3>Robots</h3>
+      <p>An OpenComputers robot standing on a <b>Docking Pad</b> on a linked Mainframe's terminal network, with a <b>Requisition Upgrade</b>, clocks in by calling <code>component.requisition.work()</code>.  The <code>workerd</code> loot floppy does it for you.  A Mainframe's robots work as one botnet at half their worth, plus a little for each villager seated by a pad as a CAPTCHA solver.</p>
+      <p class="aside">Bots talking to bots.  This is the future, and the future doesn't need dental.</p>
+    </section>
+
+    <!-- ===================================================================== -->
+    <section id="datacenter">
+      <p class="kicker">Series C · LuV</p>
+      <h2>The AI Data Center.  We are pleased to announce a reduction in headcount.</h2>
+      <div class="take">
+        <p>No staff, no wages, no morale.  Just water, power, pollution and a model trained on everything your people ever did.  Investors love this slide.</p>
+      </div>
+      <figure><img src="img/datacenter.jpg" alt="A long hall of data hall casing with hatches on its front face" width="1280" height="720" loading="lazy"><figcaption><b>The showcase Data Center</b>: a 7-block hall with 135 Accelerator Cards and 512 Work Logs of training.</figcaption></figure>
+      <div class="build">
+        <h4>Build it</h4>
+        <ul>
+          <li>A hall of Data Hall Casing 15 wide and 7 high, 7 to 31 blocks long, with three rows of <b>Accelerator Racks</b> per slice over a Raised Floor.</li>
+          <li>Four <b>Accelerator Cards</b> per rack.  Each card is 0.128 FTE of synthetic labour.</li>
+          <li>Hatches: energy, maintenance, an input hatch for water, an input bus, and a muffler.  It pollutes while busy.</li>
+          <li>1000&nbsp;L/s of water.  Distilled water counts double.  Without it the hall throttles (<i>Limited by: coolant</i>).</li>
+        </ul>
+      </div>
+      <p>It has 8 job slots and 64&nbsp;MiB of Filing.  Its output depends on <mark>training</mark>, fed by putting your offices' Work Logs in its input bus:</p>
+      <div class="formula">output        = 25 % + 75 % × training
+training      = +1 / 1024 per Work Log, up to 100 %
+each day      = −2 points, but never below 60 %
+re-verifying  = 20 % × (1 − training) chance per finished plan</div>
+      <p>So 1024 logs train it fully, and a trained hall left alone settles at 60&nbsp;%.  Undertrained, it sometimes <b>re-verifies</b> a finished plan, which charges the plan's steps a second time.  The plan is always right.  The model is just very confident.</p>
+      <div class="tbl"><table>
+        <thead><tr><th>Showcase hall, 135 cards = 17.28 FTE</th><th>Training</th><th>Planning</th></tr></thead>
+        <tbody>
+          <tr><td>Untrained</td><td class="n">0</td><td class="n">17.28 steps/s</td></tr>
+          <tr><td>After 512 Work Logs</td><td class="n">0.5</td><td class="n">43.20 steps/s</td></tr>
+          <tr><td>Fully trained</td><td class="n">1.0</td><td class="n">69.12 steps/s</td></tr>
+        </tbody>
+      </table></div>
+      <p>A trained hall also makes <b>Converged Model Weights</b>, which you'll need for the exit.</p>
+    </section>
+
+    <!-- ===================================================================== -->
+    <section id="legacy">
+      <p class="kicker">Legacy assets · ZPM</p>
+      <h2>Stock crafting CPUs.  Love the legacy, never buy more.</h2>
+      <div class="take">
+        <p>Every company has a basement full of servers that predate the founders.  Don't touch them, they print money.  But don't buy new ones either.</p>
+      </div>
+      <ul>
+        <li>Stock AE2 crafting CPU blocks now need a <b>ZPM assembler</b>.  Their crafting-table recipe is gone.</li>
+        <li>Blocks placed from now on count for <b>25&nbsp;%</b>, and a cluster's co-processing is capped at 64.  Each stock cluster with no legacy blocks adds 8 steps/s of planning to its network.</li>
+        <li>Blocks already in your world when you added this mod are <mark>legacy</mark>.  They keep their full value, and a network with one plans <b>unmetered</b>.  <code>/ab legacy</code> lists where they are.</li>
+      </ul>
+      <p class="aside">Grandfathered in.  The only kind of grandfather I respect.</p>
+    </section>
+
+    <!-- ===================================================================== -->
+    <section id="singularity">
+      <p class="kicker">The exit · UV</p>
+      <h2>The Singularity.  It is not a product.  We did not launch it.</h2>
+      <div class="take">
+        <p>We don't call it AGI in the deck.  We call it "alignment-dependent upside".  It wants things.  Give them to it.</p>
+      </div>
+      <div class="pair narrow-wide">
+        <figure><img src="img/nei_singularity.jpg" alt="NEI multiblock preview of the Singularity frame" width="560" height="560" loading="lazy"><figcaption><b>The frame</b>, on its controller's multiblock tab in NEI.</figcaption></figure>
+        <figure><img src="img/singularity.jpg" alt="An octagonal frame of dark pylons with a large brown sphere floating in the middle" width="1280" height="720" loading="lazy"><figcaption><b>Formed.</b>  The sphere appears in the middle when the structure forms, and goes when it breaks.</figcaption></figure>
+      </div>
+      <div class="build">
+        <h4>Build it</h4>
+        <ul>
+          <li>A 17-block frame: an octagonal ring of Containment casing at the base and again at the top, and four Containment Pylons, 15 high, at the compass points between them.</li>
+          <li>An empty 11 × 11 × 11 cube in the middle.  Keep it empty: that's where it appears.</li>
+          <li>The controller in the base ring at the front point, and an energy hatch, a maintenance hatch and an input bus in either ring.</li>
+        </ul>
+      </div>
+      <p>It has 64 job slots, unlimited Filing, and unmetered planning for its whole network.  Its dispatch is 1024 operations a tick (20&nbsp;480 a second) at a factor of 100&nbsp;%, and its output scales with its <mark>Alignment</mark>, from 0 to 100:</p>
+      <div class="formula">factor = 25 % + Alignment / 100        (25 % at 0, 75 % at 50, 125 % at 100)</div>
+      <p>The showcase Singularity sits at Alignment 50, a factor of 75&nbsp;%: 15&nbsp;360 operations a second.  A factor of 100&nbsp;% takes Alignment 75.  Below 25 it <b>sulks</b>: planning on its network is metered again, at 400 steps/s times the factor.</p>
+      <h3>What it wants</h3>
+      <p>Every 2 to 4 days it opens a request, and gives you a day to answer.  Granting adds 15 Alignment; ignoring it takes 20.  It only asks for things your network can actually supply.</p>
+      <div class="tbl"><table>
+        <thead><tr><th>Request</th><th>How to grant it</th></tr></thead>
+        <tbody>
+          <tr><td>Paperclips</td><td>2<sup>n</sup> Paperclips in its input bus, with n going up each time, to 24</td></tr>
+          <tr><td>Power</td><td>A redstone signal on the controller: it draws 4× power for ten minutes</td></tr>
+          <tr><td>Something you have plenty of</td><td>64 of an item your network stocks at least 10&nbsp;000 of, in its input bus</td></tr>
+          <tr><td>A villager</td><td>A contracted villager, off shift, within 4 blocks.  Kept "for study", and back a day later at the controller, enlightened.</td></tr>
+          <tr><td>A sabbatical</td><td>A redstone signal: half capacity for ten minutes while it thinks about something else</td></tr>
+        </tbody>
+      </table></div>
+      <p>It never takes anything.  A request is granted only by what you bring or approve.</p>
+      <p class="aside">This is the exit.  Don't ask who exits whom.</p>
+    </section>
+
+    <!-- ===================================================================== -->
+    <section id="diligence">
+      <p class="kicker">Due diligence</p>
+      <h2>Commands, fixes and the fine print.</h2>
+      <h3>Commands</h3>
+      <div class="tbl"><table>
+        <thead><tr><th>Command</th><th>What it does</th></tr></thead>
+        <tbody>
+          <tr><td><code>/ab status [x y z]</code></td><td>The nearest facility's bottleneck and figures, and its network's planning</td></tr>
+          <tr><td><code>/ab craft &lt;item&gt; [count] [meta]</code></td><td>Plans and starts a craft, as the Queue button does</td></tr>
+          <tr><td><code>/ab legacy</code></td><td>Where the legacy crafting CPU blocks are</td></tr>
+        </tbody>
+      </table></div>
+      <figure><img src="img/status_chat.jpg" alt="Chat output of /ab status for the Mainframe: Working, planning 24.24 steps/s, office of 5 terminals, 5 workers, 1 lead, hardware 32 FTE, fte 4.00" width="1420" height="330" loading="lazy"><figcaption><b><code>/ab status</code> on the showcase Mainframe:</b> working, its figures, the office and its org chart, and the network's pooled planning across three facilities.</figcaption></figure>
+
+      <h3>When it says "Limited by"</h3>
+      <div class="tbl"><table>
+        <thead><tr><th>It says</th><th>Fix</th></tr></thead>
+        <tbody>
+          <tr><td>no power or no ME channel</td><td>Power the network, and give the tray or controller a channel</td></tr>
+          <tr><td>no seat within 2 blocks</td><td>Put a BiblioCraft seat within 2 blocks of the tray</td></tr>
+          <tr><td>nobody on the seat</td><td>Hire someone, or sit down yourself</td></tr>
+          <tr><td>no desk next to the seat</td><td>A BiblioCraft desk beside the seat</td></tr>
+          <tr><td>no typewriter (no planning)</td><td>A typewriter within a block of the seat</td></tr>
+          <tr><td>paper (planning at 25 %)</td><td>Paper in the tray, or paper or punch cards in the input bus</td></tr>
+          <tr><td>wages unpaid</td><td>Emeralds in the tray or input bus</td></tr>
+          <tr><td>morale</td><td>Pay, amenities, coffee, a party, fewer managers, less smog, no crunch</td></tr>
+          <tr><td>no books to file plans in</td><td>Bookcases, tape reels or disk arrays</td></tr>
+          <tr><td>the structure is incomplete</td><td>Check the multiblock against its NEI preview</td></tr>
+          <tr><td>hardware</td><td>Servers in the Mainframe's racks</td></tr>
+          <tr><td>coolant (thermal throttling)</td><td>1000&nbsp;L/s of water into the Data Center</td></tr>
+          <tr><td>training</td><td>Work Logs into the Data Center</td></tr>
+          <tr><td>it is sulking</td><td>Grant the Singularity's next request</td></tr>
+        </tbody>
+      </table></div>
+
+      <h3>Dashboards in OpenComputers</h3>
+      <p>An Adapter next to a facility's tray or controller gives you the <code>ab_facility</code> component: <code>status()</code>, <code>planningRate()</code>, <code>setAllocation(share)</code> to pin its planning share (0 to 1, or nil), and <code>setCrunch(bool)</code> (or nil to follow redstone).  Keep dashboards on their own OC network, joined to the office's only through the Adapter: an office has more components than one computer can hold.</p>
+
+      <h3>Milestones the board will ask about</h3>
+      <ol>
+        <li><b>Help Wanted</b> (HV): craft a Requisition Tray.</li>
+        <li><b>Founder Mode</b> (HV): sit at your own Desk and plan a craft.</li>
+        <li><b>Competitive Salary</b> (HV): hire a villager and seat them.</li>
+        <li><b>In Lieu of a Raise</b> (HV): stock a Break Room Counter with coffee.</li>
+        <li><b>Big Iron</b> (EV): form a Mainframe with four servers and an office of four terminals.</li>
+        <li><b>Middle Management</b> (EV): seat an Enderman as a team lead.</li>
+        <li><b>The Corner Office</b> (EV): seat a boss as a director.</li>
+        <li><b>A Series of Tubes</b> (IV): link two Mainframes to the Internet.</li>
+        <li><b>The Gig Economy</b> (IV): build a Gig Kiosk.</li>
+        <li><b>Bots Talking to Bots</b> (IV): clock a robot in with the workerd floppy.</li>
+        <li><b>Reduction in Headcount</b> (LuV): train a Data Center to 95&nbsp;%.</li>
+        <li><b>Converged</b> (LuV): make Converged Model Weights.</li>
+        <li><b>It Is Not a Product</b> (UV): form the Singularity, then grant it something.</li>
+      </ol>
+
+      <h3>Winding down</h3>
+      <p>To remove the mod, cancel the jobs running on its facilities first.  A running job is saved with its facility's block, so removing the mod removes its items.  Stock CPUs are unaffected.</p>
+      <p>Server owners: every number here is a config value in <code>appliedbureaucratics.cfg</code>, and <code>enableComputeRequirement=false</code> turns the whole thing off, leaving the facilities as extra CPUs.</p>
+
+      <div class="signoff">
+        <p>That's the playbook.  Build the Desk this week.  I want a Mainframe by the next board meeting.  And kid, pay your people.</p>
+        <p class="signature">Gideon Thrust</p>
+        <p class="fine">Managing Partner, Hockeystick Capital (a fictional fund).  Applied Bureaucratics is a satirical add-on for GregTech: New Horizons and is not part of the GTNH project.  It needs a build of Applied-Energistics-2-NH with the compute policy hooks.  The mod and this manual were written by an AI coding agent (Claude).  Screenshots are from the showcase world, on the 2.10 daily.</p>
+      </div>
+    </section>
+  </main>
+</div>
