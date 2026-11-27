@@ -29,15 +29,15 @@ public class ContainerRequisitionTray extends Container {
 
     public ContainerRequisitionTray(final InventoryPlayer player, final TileRequisitionTray tray) {
         this.tray = tray;
-        this.addSlotToContainer(new FilteredSlot(tray, TileRequisitionTray.SLOT_PAPER, 26, 72));
-        this.addSlotToContainer(new FilteredSlot(tray, TileRequisitionTray.SLOT_PAYROLL, 134, 72));
+        this.addSlotToContainer(new FilteredSlot(tray, TileRequisitionTray.SLOT_PAPER, 8, 104));
+        this.addSlotToContainer(new FilteredSlot(tray, TileRequisitionTray.SLOT_PAYROLL, 180, 104));
         for (int row = 0; row < 3; row++) {
             for (int col = 0; col < 9; col++) {
-                this.addSlotToContainer(new Slot(player, col + row * 9 + 9, 8 + col * 18, 102 + row * 18));
+                this.addSlotToContainer(new Slot(player, col + row * 9 + 9, 23 + col * 18, 138 + row * 18));
             }
         }
         for (int col = 0; col < 9; col++) {
-            this.addSlotToContainer(new Slot(player, col, 8 + col * 18, 160));
+            this.addSlotToContainer(new Slot(player, col, 23 + col * 18, 196));
         }
     }
 

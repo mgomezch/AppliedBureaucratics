@@ -15,9 +15,12 @@ public class GuiRequisitionTray extends GuiContainer {
     public GuiRequisitionTray(final InventoryPlayer player, final TileRequisitionTray tray) {
         super(new ContainerRequisitionTray(player, tray));
         this.container = (ContainerRequisitionTray) this.inventorySlots;
-        this.xSize = 176;
-        this.ySize = 184;
+        this.xSize = 206;
+        this.ySize = 220;
     }
+
+    /// Room for text inside the panel's margins.
+    private static final int TEXT_WIDTH = 190;
 
     private int value(final int index) {
         return this.container.values.get(index);
@@ -33,19 +36,21 @@ public class GuiRequisitionTray extends GuiContainer {
         final Bottleneck[] all = Bottleneck.values();
         final Bottleneck bottleneck = all[Math
             .max(0, Math.min(all.length - 1, this.value(ContainerRequisitionTray.BOTTLENECK)))];
-        this.fontRendererObj.drawString(
+        // The bottleneck may take two lines; the panel leaves room for them.
+        this.fontRendererObj.drawSplitString(
             StatCollector.translateToLocal(bottleneck.key()),
             8,
             18,
+            TEXT_WIDTH,
             bottleneck == Bottleneck.NONE ? 0x206020 : 0x902020);
         this.fontRendererObj
-            .drawString("§o" + StatCollector.translateToLocal(bottleneck.key() + ".quip"), 8, 28, 0x606060);
+            .drawString("§o" + StatCollector.translateToLocal(bottleneck.key() + ".quip"), 8, 38, 0x606060);
         final String worker = switch (this.value(ContainerRequisitionTray.WORKER)) {
             case 1 -> "ab.gui.worker.villager";
             case 2 -> "ab.gui.worker.founder";
             default -> "ab.gui.worker.none";
         };
-        this.fontRendererObj.drawString(StatCollector.translateToLocal(worker), 8, 40, 0x404040);
+        this.fontRendererObj.drawString(StatCollector.translateToLocal(worker), 8, 50, 0x404040);
         final int flags = this.value(ContainerRequisitionTray.FLAGS);
         final StringBuilder perks = new StringBuilder();
         if ((flags & 1) != 0) {
@@ -59,20 +64,20 @@ public class GuiRequisitionTray extends GuiContainer {
         if ((flags & 4) != 0) {
             perks.append(StatCollector.translateToLocal("ab.gui.party"));
         }
-        this.fontRendererObj.drawString(perks.toString(), 8, 88, 0x804000);
+        this.fontRendererObj.drawString(perks.toString(), 8, 126, 0x804000);
         this.fontRendererObj.drawString(
             StatCollector.translateToLocalFormatted(
                 "ab.gui.planning",
                 this.value(ContainerRequisitionTray.PLANNING_RATE_X10) / 10.0),
             8,
-            50,
+            64,
             0x404040);
         this.fontRendererObj.drawString(
             StatCollector.translateToLocalFormatted(
                 "ab.gui.dispatch",
                 this.value(ContainerRequisitionTray.DISPATCH_RATE_X10) / 10.0),
-            92,
-            50,
+            8,
+            74,
             0x404040);
         this.fontRendererObj.drawString(
             StatCollector.translateToLocalFormatted(
@@ -80,20 +85,18 @@ public class GuiRequisitionTray extends GuiContainer {
                 this.value(ContainerRequisitionTray.FILING_USED),
                 this.value(ContainerRequisitionTray.FILING)),
             8,
-            60,
+            84,
             0x404040);
         this.fontRendererObj.drawString(
             StatCollector.translateToLocalFormatted("ab.gui.morale", this.value(ContainerRequisitionTray.MORALE)),
-            92,
-            60,
+            8,
+            94,
             0x404040);
-        this.fontRendererObj.drawString(StatCollector.translateToLocal("ab.gui.paper"), 46, 76, 0x404040);
-        this.fontRendererObj.drawString(
-            StatCollector
-                .translateToLocal(this.value(ContainerRequisitionTray.PAID) == 1 ? "ab.gui.paid" : "ab.gui.unpaid"),
-            92,
-            76,
-            0x404040);
+        this.fontRendererObj.drawString(StatCollector.translateToLocal("ab.gui.paper"), 30, 108, 0x404040);
+        final String wages = StatCollector
+            .translateToLocal(this.value(ContainerRequisitionTray.PAID) == 1 ? "ab.gui.paid" : "ab.gui.unpaid");
+        // Right-aligned against the payroll slot.
+        this.fontRendererObj.drawString(wages, 176 - this.fontRendererObj.getStringWidth(wages), 108, 0x404040);
     }
 
     @Override
