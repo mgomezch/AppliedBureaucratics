@@ -6,6 +6,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.gtnewhorizons.appliedbureaucratics.block.ModBlocks;
+import com.gtnewhorizons.appliedbureaucratics.command.CommandAB;
 import com.gtnewhorizons.appliedbureaucratics.config.ABConfig;
 import com.gtnewhorizons.appliedbureaucratics.gui.GuiHandler;
 import com.gtnewhorizons.appliedbureaucratics.integration.ae2.ComputeGridCache;
@@ -24,6 +25,7 @@ import cpw.mods.fml.common.SidedProxy;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
+import cpw.mods.fml.common.event.FMLServerStartingEvent;
 import cpw.mods.fml.common.network.NetworkRegistry;
 import cpw.mods.fml.common.registry.EntityRegistry;
 
@@ -74,5 +76,10 @@ public class AppliedBureaucratics {
         Furniture.resolveAll();
         ManagerKind.resolveAll();
         Recipes.register();
+    }
+
+    @Mod.EventHandler
+    public void serverStarting(FMLServerStartingEvent event) {
+        event.registerServerCommand(new CommandAB());
     }
 }
