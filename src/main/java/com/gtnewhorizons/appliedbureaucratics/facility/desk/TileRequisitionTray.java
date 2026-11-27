@@ -290,6 +290,26 @@ public class TileRequisitionTray extends TileEntity
         return this.survey;
     }
 
+    @Override
+    public java.util.List<String> statusLines() {
+        return java.util.Arrays.asList(
+            net.minecraft.util.StatCollector.translateToLocal(this.bottleneck.key()),
+            String.format(
+                java.util.Locale.ROOT,
+                "  planning %.2f steps/s, dispatch %.2f ops/s, filing %d/%d B, morale %.0f, %s, worker %s, slots busy %d%s%s%s",
+                this.output.planningRate(),
+                this.output.dispatchRate(),
+                this.slots.getUsedFiling(),
+                this.slots.getFiling(),
+                this.morale.get(),
+                this.isPaid() ? "paid" : "unpaid",
+                this.survey.worker() != null ? "employee" : this.survey.founder() != null ? "founder" : "none",
+                this.slots.getBusyCount(),
+                this.crunch ? ", crunch" : "",
+                this.coffee ? ", coffee" : "",
+                this.party ? ", party" : ""));
+    }
+
     public boolean isCrunching() {
         return this.crunch;
     }

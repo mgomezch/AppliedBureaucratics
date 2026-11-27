@@ -10,6 +10,7 @@ public final class ModItems {
     public static Item signedContract;
     public static Item managementContract;
     public static Item pinkSlip;
+    public static Item component;
 
     private ModItems() {}
 
@@ -18,6 +19,7 @@ public final class ModItems {
         signedContract = register(new ItemSignedContract("signed_contract"), "signed_contract");
         managementContract = register(new ItemAB("management_contract"), "management_contract");
         pinkSlip = register(new ItemAB("pink_slip"), "pink_slip");
+        component = register(new ItemComponent(), "component");
     }
 
     private static Item register(final Item item, final String name) {

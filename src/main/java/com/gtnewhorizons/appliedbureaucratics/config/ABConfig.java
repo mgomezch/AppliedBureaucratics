@@ -34,6 +34,9 @@ public final class ABConfig {
     public static double deskBellBonus = 1.25;
     public static int deskSeatRange = 2;
     public static int deskBookcaseRange = 3;
+    // The Mainframe.
+    public static long mainframeFilingCap = 1 << 20;
+
     // The break room.
     public static double breakRoomRange = 16;
     public static int coffeeWorkerDays = 4;
@@ -114,6 +117,8 @@ public final class ABConfig {
             .getInt();
         deskBellBonus = c.get(desk, "bellBonus", deskBellBonus, "Dispatch with a desk bell.")
             .getDouble();
+        mainframeFilingCap = c.get("mainframe", "filingCap", (int) mainframeFilingCap, "A Mainframe's Filing cap.")
+            .getInt();
         breakRoomRange = c.get("breakroom", "range", breakRoomRange, "How far a Break Room Counter serves.")
             .getDouble();
         coffeeWorkerDays = c

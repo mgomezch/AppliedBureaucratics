@@ -4,7 +4,10 @@ import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 
+import com.gtnewhorizons.appliedbureaucratics.block.BlockABCasing.Casing;
 import com.gtnewhorizons.appliedbureaucratics.block.ModBlocks;
+import com.gtnewhorizons.appliedbureaucratics.facility.ModMetaTileEntities;
+import com.gtnewhorizons.appliedbureaucratics.item.ItemComponent;
 import com.gtnewhorizons.appliedbureaucratics.item.ModItems;
 
 import appeng.api.AEApi;
@@ -32,6 +35,7 @@ final class Recipes {
             GTModHandler.RecipeBits.BITS,
             new Object[] { "PCP", "BHB", "PCP", 'P', logic, 'C', OrePrefixes.circuit.get(Materials.HV), 'B',
                 new ItemStack(Items.book), 'H', ItemList.Hull_HV });
+        registerMainframe(logic);
         GameRegistry.addShapelessRecipe(
             new ItemStack(ModItems.employmentContract),
             Items.paper,
@@ -54,5 +58,55 @@ final class Recipes {
             Blocks.planks,
             'C',
             Items.cauldron);
+    }
+
+    private static void registerMainframe(final ItemStack logic) {
+        final ItemStack engineering = AEApi.instance()
+            .definitions()
+            .materials()
+            .engProcessor()
+            .maybeStack(1)
+            .orNull();
+        final long bits = GTModHandler.RecipeBits.BITS;
+        GTModHandler.addCraftingRecipe(
+            new ItemStack(ModBlocks.casing, 2, Casing.MAINFRAME.meta()),
+            bits,
+            new Object[] { "PhP", "PFP", "PwP", 'P', OrePrefixes.plate.get(Materials.Steel), 'F',
+                OrePrefixes.frameGt.get(Materials.Steel) });
+        GTModHandler.addCraftingRecipe(
+            new ItemStack(ModBlocks.casing, 1, Casing.TAPE_WINDOW.meta()),
+            bits,
+            new Object[] { "GRG", "GCG", 'G', "paneGlass", 'R', ItemComponent.Kind.TAPE_REEL.stack(1), 'C',
+                new ItemStack(ModBlocks.casing, 1, Casing.MAINFRAME.meta()) });
+        GTModHandler.addCraftingRecipe(
+            new ItemStack(ModBlocks.terminalConcentrator),
+            bits,
+            new Object[] { "ECE", "PMP", "ECE", 'E', OrePrefixes.circuit.get(Materials.EV), 'C',
+                OrePrefixes.cableGt01.get(Materials.Aluminium), 'P', engineering, 'M',
+                new ItemStack(ModBlocks.casing, 1, Casing.MAINFRAME.meta()) });
+        GTModHandler.addCraftingRecipe(
+            ModMetaTileEntities.mainframe,
+            bits,
+            new Object[] { "CPC", "LHL", "CTC", 'C', OrePrefixes.circuit.get(Materials.EV), 'P', engineering, 'L',
+                logic, 'H', ItemList.Hull_EV, 'T', ItemComponent.Kind.TAPE_REEL.stack(1) });
+        GTModHandler.addCraftingRecipe(
+            ItemComponent.Kind.TAPE_REEL.stack(2),
+            bits,
+            new Object[] { "PSP", "SMS", "PSP", 'P', OrePrefixes.plate.get(Materials.Polyethylene), 'S',
+                OrePrefixes.foil.get(Materials.Iron), 'M', OrePrefixes.stick.get(Materials.SteelMagnetic) });
+        GTModHandler.addCraftingRecipe(
+            ItemComponent.Kind.HIGH_DENSITY_TAPE_REEL.stack(1),
+            bits,
+            new Object[] { "PSP", "SMS", "PSP", 'P', OrePrefixes.plate.get(Materials.Polytetrafluoroethylene), 'S',
+                OrePrefixes.foil.get(Materials.Chrome), 'M', OrePrefixes.stick.get(Materials.NeodymiumMagnetic) });
+        GTModHandler.addCraftingRecipe(
+            ItemComponent.Kind.PUNCH_CARD.stack(1),
+            bits,
+            new Object[] { "PP", "PP", 'P', new ItemStack(Items.paper) });
+        GTModHandler.addCraftingRecipe(
+            ItemComponent.Kind.BLANK_DATA_TAPE.stack(4),
+            bits,
+            new Object[] { "PMP", 'P', OrePrefixes.plate.get(Materials.Polyethylene), 'M',
+                OrePrefixes.stick.get(Materials.SteelMagnetic) });
     }
 }

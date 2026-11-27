@@ -16,12 +16,12 @@ import net.minecraft.nbt.NBTTagList;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.ChunkCoordinates;
-import net.minecraft.util.StatCollector;
 import net.minecraft.world.World;
 
 import org.jspecify.annotations.Nullable;
 
 import com.gtnewhorizons.appliedbureaucratics.compute.PlanningPool;
+import com.gtnewhorizons.appliedbureaucratics.facility.IComputeFacility;
 import com.gtnewhorizons.appliedbureaucratics.facility.desk.TileRequisitionTray;
 import com.gtnewhorizons.appliedbureaucratics.integration.ae2.IComputeGrid;
 
@@ -35,9 +35,11 @@ import appeng.api.networking.security.PlayerSource;
 import appeng.crafting.v2.CraftingJobV2;
 import appeng.helpers.IInterfaceHost;
 import appeng.me.cache.CraftingGridCache;
+import appeng.me.cluster.implementations.ICraftingCPUHost;
 import appeng.util.Platform;
 import appeng.util.item.AEItemStack;
 import cpw.mods.fml.common.registry.GameData;
+import gregtech.api.interfaces.tileentity.IGregTechTileEntity;
 
 /// `/ab status` reports the nearest Desk and its network's compute; `/ab craft <item> [count] [meta]` asks that
 /// network to plan and start a craft, as the craft confirm screen's Queue button does; `/ab debug pattern ...`
@@ -51,7 +53,7 @@ public class CommandAB extends CommandBase {
 
     @Override
     public String getCommandUsage(final ICommandSender sender) {
-        return "/ab status [x y z] | /ab craft <item> [count] [meta] | /ab debug pattern <x> <y> <z> <slot> <in> <inCount> <out> <outCount>";
+        return "/ab status [x y z] | /ab craft <item> [count] [meta] | /ab debug pattern <x> <y> <z> <slot> <in> <inCount> <out> <outCount> | /ab debug ocitem <x> <y> <z> <slot> <name>";
     }
 
     @Override
@@ -79,13 +81,13 @@ public class CommandAB extends CommandBase {
             case "status" -> this.status(
                 sender,
                 args.length >= 4
-                    ? nearestTray(
+                    ? nearest(
                         sender.getEntityWorld(),
                         new ChunkCoordinates(
                             parseInt(sender, args[1]),
                             parseInt(sender, args[2]),
                             parseInt(sender, args[3])))
-                    : nearestTray(sender));
+                    : nearest(sender));
             case "craft" -> this.craft(sender, Arrays.copyOfRange(args, 1, args.length));
             case "debug" -> {
                 if (!sender.canCommandSenderUseCommand(2, "ab")) {
@@ -101,72 +103,74 @@ public class CommandAB extends CommandBase {
         sender.addChatMessage(new ChatComponentText(text));
     }
 
-    private static @Nullable TileRequisitionTray nearestTray(final ICommandSender sender) {
-        return nearestTray(sender.getEntityWorld(), sender.getPlayerCoordinates());
+    /// A facility found near a player: what to call it, where it is, and the facility itself.
+    private record Found(String name, int x, int y, int z, IComputeFacility facility, ICraftingCPUHost host) {}
+
+    private static @Nullable Found nearest(final ICommandSender sender) {
+        return nearest(sender.getEntityWorld(), sender.getPlayerCoordinates());
     }
 
-    private static @Nullable TileRequisitionTray nearestTray(final World world, final ChunkCoordinates at) {
-        TileRequisitionTray best = null;
+    private static @Nullable Found nearest(final World world, final ChunkCoordinates at) {
+        Found best = null;
         double bestDistance = 16 * 16;
         for (final Object o : world.loadedTileEntityList) {
-            if (o instanceof TileRequisitionTray tray && !tray.isInvalid()) {
-                final double d = at.getDistanceSquared(tray.xCoord, tray.yCoord, tray.zCoord);
+            final TileEntity te = (TileEntity) o;
+            if (te.isInvalid()) {
+                continue;
+            }
+            Found found = null;
+            if (te instanceof TileRequisitionTray tray) {
+                found = new Found("Desk", te.xCoord, te.yCoord, te.zCoord, tray, tray);
+            } else
+                if (te instanceof IGregTechTileEntity gt && gt.getMetaTileEntity() instanceof IComputeFacility facility
+                    && facility instanceof ICraftingCPUHost host) {
+                        found = new Found(
+                            gt.getMetaTileEntity()
+                                .getLocalName(),
+                            te.xCoord,
+                            te.yCoord,
+                            te.zCoord,
+                            facility,
+                            host);
+                    }
+            if (found != null) {
+                final double d = at.getDistanceSquared(te.xCoord, te.yCoord, te.zCoord);
                 if (d < bestDistance) {
                     bestDistance = d;
-                    best = tray;
+                    best = found;
                 }
             }
         }
         return best;
     }
 
-    private static @Nullable IGrid gridOf(final TileRequisitionTray tray) {
-        final IGridNode node = tray.getActionableNode();
+    private static @Nullable IGrid gridOf(final Found found) {
+        final IGridNode node = found.host()
+            .getActionableNode();
         return node != null ? node.getGrid() : null;
     }
 
-    private void status(final ICommandSender sender, final @Nullable TileRequisitionTray tray) {
-        if (tray == null) {
-            say(sender, "No Requisition Tray within 16 blocks.");
+    private void status(final ICommandSender sender, final @Nullable Found found) {
+        if (found == null) {
+            say(sender, "No facility within 16 blocks.");
             return;
         }
+        final List<String> lines = found.facility()
+            .statusLines();
         say(
             sender,
             String.format(
                 Locale.ROOT,
-                "Desk at %d %d %d: %s",
-                tray.xCoord,
-                tray.yCoord,
-                tray.zCoord,
-                StatCollector.translateToLocal(
-                    tray.getBottleneck()
-                        .key())));
-        say(
-            sender,
-            String.format(
-                Locale.ROOT,
-                "  planning %.2f steps/s, dispatch %.2f ops/s, filing %d/%d B, morale %.0f, %s, worker %s, slots busy %d%s%s%s",
-                tray.getOutput()
-                    .planningRate(),
-                tray.getOutput()
-                    .dispatchRate(),
-                tray.getSlots()
-                    .getUsedFiling(),
-                tray.getSlots()
-                    .getFiling(),
-                tray.getMorale()
-                    .get(),
-                tray.isPaid() ? "paid" : "unpaid",
-                tray.getSurvey()
-                    .worker() != null ? "employee"
-                        : tray.getSurvey()
-                            .founder() != null ? "founder" : "none",
-                tray.getSlots()
-                    .getBusyCount(),
-                tray.isCrunching() ? ", crunch" : "",
-                tray.hasCoffee() ? ", coffee" : "",
-                tray.isPartying() ? ", party" : ""));
-        final IGrid grid = gridOf(tray);
+                "%s at %d %d %d: %s",
+                found.name(),
+                found.x(),
+                found.y(),
+                found.z(),
+                lines.isEmpty() ? "" : lines.get(0)));
+        for (int i = 1; i < lines.size(); i++) {
+            say(sender, lines.get(i));
+        }
+        final IGrid grid = gridOf(found);
         if (grid != null) {
             final IComputeGrid compute = grid.getCache(IComputeGrid.class);
             final PlanningPool<ICraftingPlanningJob> pool = compute.getPlanningPool();
@@ -195,13 +199,13 @@ public class CommandAB extends CommandBase {
         }
         final int count = args.length > 1 ? parseIntWithMin(sender, args[1], 1) : 1;
         final int meta = args.length > 2 ? parseInt(sender, args[2]) : 0;
-        final TileRequisitionTray tray = nearestTray(sender);
-        final IGrid grid = tray != null ? gridOf(tray) : null;
+        final Found found = nearest(sender);
+        final IGrid grid = found != null ? gridOf(found) : null;
         if (grid == null || !(grid.getCache(ICraftingGrid.class) instanceof CraftingGridCache crafting)) {
-            say(sender, "No networked Requisition Tray within 16 blocks.");
+            say(sender, "No networked facility within 16 blocks.");
             return;
         }
-        final PlayerSource source = new PlayerSource(player, tray);
+        final PlayerSource source = new PlayerSource(player, found.host());
         final Object job = crafting.beginCraftingJob(
             player.worldObj,
             grid,
@@ -219,6 +223,10 @@ public class CommandAB extends CommandBase {
     }
 
     private void debug(final ICommandSender sender, final String[] args) {
+        if (args.length == 6 && "ocitem".equals(args[0])) {
+            this.debugOcItem(sender, args);
+            return;
+        }
         if (args.length < 9 || !"pattern".equals(args[0])) {
             throw new WrongUsageException(this.getCommandUsage(sender));
         }
@@ -256,5 +264,22 @@ public class CommandAB extends CommandBase {
         pattern.setTagCompound(tag);
         inventory.setInventorySlotContents(slot, pattern);
         say(sender, "Pattern set.");
+    }
+
+    /// `/ab debug ocitem <x> <y> <z> <slot> <name>` puts OpenComputers' item `name` (as its API names it: `server1`,
+    /// `screen1`) into an inventory slot, since OC's items are sub-items whose damage values the API hides.
+    private void debugOcItem(final ICommandSender sender, final String[] args) {
+        final TileEntity te = sender.getEntityWorld()
+            .getTileEntity(parseInt(sender, args[1]), parseInt(sender, args[2]), parseInt(sender, args[3]));
+        final int slot = parseInt(sender, args[4]);
+        if (!(te instanceof IInventory inventory) || slot < 0 || slot >= inventory.getSizeInventory()) {
+            throw new WrongUsageException("No inventory slot " + slot);
+        }
+        final li.cil.oc.api.detail.ItemInfo info = li.cil.oc.api.Items.get(args[5]);
+        if (info == null) {
+            throw new WrongUsageException("No OpenComputers item " + args[5]);
+        }
+        inventory.setInventorySlotContents(slot, info.createItemStack(1));
+        say(sender, "Item set.");
     }
 }

@@ -89,9 +89,10 @@ public final class FacilitySlots {
         return used;
     }
 
+    /// Sets how many slots there should be. They are made or removed at the next [#tick], since a slot's CPU needs its
+    /// host to be in the world.
     public void setSlotCount(final int slots) {
         this.wanted = Math.max(0, slots);
-        this.resize();
     }
 
     public void setFiling(final long bytes) {
