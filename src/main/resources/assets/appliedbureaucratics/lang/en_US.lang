@@ -1,0 +1,76 @@
+itemGroup.appliedbureaucratics=Applied Bureaucratics
+
+tile.appliedbureaucratics.requisition_tray.name=Requisition Tray
+tile.appliedbureaucratics.requisition_tray.tooltip=Sole proprietorship. You are the IT department.\nPlace on ME cable, with a BiblioCraft seat, desk and typewriter nearby.
+
+item.appliedbureaucratics.employment_contract.name=Employment Contract
+item.appliedbureaucratics.employment_contract.tooltip=Competitive salary. We are like a family here.\nRight-click a villager to hire it.
+item.appliedbureaucratics.signed_contract.name=Signed Contract
+item.appliedbureaucratics.signed_contract.tooltip=Right-click a seat to assign this employee to it.
+item.appliedbureaucratics.management_contract.name=Management Contract
+item.appliedbureaucratics.management_contract.tooltip=For an Enderman, a Crimson Cleric or a tamed demon.\nLet's take this offline.
+item.appliedbureaucratics.pink_slip.name=Pink Slip
+item.appliedbureaucratics.pink_slip.tooltip=We thank you for your contributions and wish you well in your future endeavours.
+
+entity.appliedbureaucratics.WorkstationMount.name=Workstation
+
+chat.appliedbureaucratics.notAWorker=Only villagers sign employment contracts.
+chat.appliedbureaucratics.notAManager=Only Endermen, Crimson Clerics and tamed demons sign management contracts.
+chat.appliedbureaucratics.alreadyEmployed=%s already works here.
+chat.appliedbureaucratics.hired=Welcome aboard, %s, %s. Please sign here, and here, and here.
+chat.appliedbureaucratics.notEmployed=That is not one of ours.
+chat.appliedbureaucratics.notYourEmployee=%s reports to someone else.
+chat.appliedbureaucratics.released=%s has been let go. We wish them well.
+chat.appliedbureaucratics.cardOnShift=§e%s§r, %s. On shift. Day %s with the company.
+chat.appliedbureaucratics.cardOffShift=§e%s§r, %s. Not at a desk. Day %s with the company.
+chat.appliedbureaucratics.notASeat=Employees sit on seats. Use a BiblioCraft seat.
+chat.appliedbureaucratics.workerNotFound=The employee on this contract is not within reach.
+chat.appliedbureaucratics.seatTaken=Someone already sits here.
+chat.appliedbureaucratics.assigned=%s has been assigned to this desk.
+
+ab.planning.noCapacity=No planning capacity on this network. Build a desk.
+ab.planning.overtime=Paying off overtime: %s steps.
+ab.planning.rate=Planning: %s steps at %s steps/s, %s facilities.
+ab.planning.standingOrder=Standing order: %s steps at %s steps/s.
+
+ab.bottleneck.none=Working.
+ab.bottleneck.none.quip=Per my last memo.
+ab.bottleneck.no_power=Limited by: no power or no ME channel.
+ab.bottleneck.no_power.quip=Have you tried turning it on?
+ab.bottleneck.no_seat=Limited by: no seat within 2 blocks.
+ab.bottleneck.no_seat.quip=Standing desks are a fad.
+ab.bottleneck.no_worker=Limited by: nobody on the seat.
+ab.bottleneck.no_worker.quip=The position remains open.
+ab.bottleneck.no_desk=Limited by: no desk next to the seat.
+ab.bottleneck.no_desk.quip=Hot-desking has gone too far.
+ab.bottleneck.no_typewriter=Limited by: no typewriter (no planning).
+ab.bottleneck.no_typewriter.quip=Please submit your request in writing.
+ab.bottleneck.no_paper=Limited by: paper (planning at 25 %).
+ab.bottleneck.no_paper.quip=We are a paperless office now.
+ab.bottleneck.unpaid=Limited by: wages unpaid.
+ab.bottleneck.unpaid.quip=Exposure is a form of payment.
+ab.bottleneck.low_morale=Limited by: morale.
+ab.bottleneck.low_morale.quip=The beatings will continue until morale improves.
+ab.bottleneck.no_filing=Limited by: no books to file plans in.
+ab.bottleneck.no_filing.quip=Where did you put the folder?
+ab.bottleneck.no_structure=Limited by: the structure is incomplete.
+ab.bottleneck.no_structure.quip=Under construction since the last fiscal year.
+ab.bottleneck.no_hardware=Limited by: hardware.
+ab.bottleneck.no_hardware.quip=It worked on my machine.
+ab.bottleneck.no_coolant=Limited by: coolant (thermal throttling).
+ab.bottleneck.no_coolant.quip=It's not a fire, it's a feature.
+ab.bottleneck.untrained=Limited by: training.
+ab.bottleneck.untrained.quip=The model is very confident.
+ab.bottleneck.sulking=Limited by: it is sulking.
+ab.bottleneck.sulking.quip=It would like some paperclips.
+
+ab.gui.worker.none=No worker.
+ab.gui.worker.villager=A contracted employee is at the desk.
+ab.gui.worker.founder=Founder mode: you are the worker.
+ab.gui.planning=Planning: %s steps/s
+ab.gui.dispatch=Dispatch: %s ops/s
+ab.gui.filing=Filing: %s / %s B
+ab.gui.morale=Morale: %s
+ab.gui.paper=< Paper
+ab.gui.paid=Wages: paid  >
+ab.gui.unpaid=Wages: UNPAID  >
