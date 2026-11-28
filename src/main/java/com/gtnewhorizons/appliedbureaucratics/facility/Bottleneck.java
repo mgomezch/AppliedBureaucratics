@@ -8,6 +8,7 @@ public enum Bottleneck {
     NO_POWER,
     NO_SEAT,
     NO_WORKER,
+    NO_KEYBOARD,
     NO_DESK,
     NO_TYPEWRITER,
     NO_PAPER,

@@ -64,8 +64,10 @@ server), and a **Terminal Concentrator** in the middle of the back.  Hatches any
 bus (tape reels for Filing, paper or punch cards, emeralds, ender pearls and gold for managers, blank data tapes) and an
 output bus (Work Logs).
 
-The **office** is wherever you like: OC screens wired to the concentrator by OC cable, each with a contracted worker
-seated within 2 blocks.  The concentrator powers the screens.  Up to 32.
+The **office** is wherever you like: OC screens wired to the concentrator by OC cable, each one a workstation: a
+seat, an OC **keyboard** beside it, and the screen right behind the keyboard (at its height or one up), with a
+contracted worker on the seat.  A worker by a screen with no keyboard in front counts for nothing.  The concentrator
+powers the screens.  Up to 32.  Seated workers face their workstation: the typewriter, the keyboard, or the desk.
 
 ### Managers
 

@@ -49,6 +49,7 @@ import com.gtnewhorizons.appliedbureaucratics.facility.internet.MTEInternet;
 import com.gtnewhorizons.appliedbureaucratics.item.ItemComponent;
 import com.gtnewhorizons.appliedbureaucratics.workforce.Employment;
 import com.gtnewhorizons.appliedbureaucratics.workforce.ManagerKind;
+import com.gtnewhorizons.appliedbureaucratics.workforce.Workplace;
 
 import appeng.me.cluster.implementations.HostedCraftingCPUCluster;
 import cpw.mods.fml.common.registry.GameRegistry;
@@ -76,7 +77,9 @@ the racks are its hardware capacity, in FTE: 8 / 16 / 32 for a tier 1 / 2 / 3 se
 Office FTE above the hardware is wasted, and each open maintenance issue takes 10 % of the hardware.
 
 The office is freeform.  A terminal is an OC screen on the concentrator's network (TileTerminalConcentrator), with a
-contracted worker seated within 2 blocks of it; a screen of tier 1 / 2 / 3 makes its worker worth 1 / 1.25 / 1.5 FTE.
+contracted worker seated within 2 blocks of it at an OC workstation: a keyboard beside the seat and a screen behind
+the keyboard (Workplace.atTerminal; see Note [Facing the workstation]).  A screen of tier 1 / 2 / 3 makes its
+worker worth 1 / 1.25 / 1.5 FTE.
 A manager's office is a seat with a BiblioCraft desk and bell next to it, within 24 blocks of the controller; the org
 chart (OrgChart) is built from where everyone sits, with leads and one level of directors.
 
@@ -113,6 +116,8 @@ public class MTEMainframe extends MTEComputeFacility<MTEMainframe> implements IS
     private double hardwareFte;
     private int servers;
     private int terminals;
+    /// Workers seated by a screen with no keyboard in front of it, who count for nothing.
+    private int withoutKeyboard;
     private int robots;
     private double botnetFactor = 0.5;
     private static final int MAX_SEATS = 32;
@@ -157,7 +162,8 @@ public class MTEMainframe extends MTEComputeFacility<MTEMainframe> implements IS
             .addInfo("Nobody ever got fired for buying one.")
             .addInfo("One AE2 job slot, run by an office of villagers at OpenComputers terminals")
             .addInfo("Hardware capacity from the servers in its racks: 8 / 16 / 32 FTE per tier 1 / 2 / 3 server")
-            .addInfo("Terminals: OC screens on the Terminal Concentrator's network, a contracted worker seated by each")
+            .addInfo("Terminals: OC screens on the Terminal Concentrator's network, each with a keyboard in front")
+            .addInfo("A contracted worker seated at each keyboard, facing the screen")
             .addInfo("Managers: a seat with a desk and a bell, within 24 blocks")
             .addInfo("Input bus: tape reels (Filing), paper or punch cards, emeralds, ender pearls, gold, data tapes")
             .addInfo("Output bus: Work Logs")
@@ -354,6 +360,7 @@ public class MTEMainframe extends MTEComputeFacility<MTEMainframe> implements IS
         }
         final List<OrgChart.Worker> staff = new ArrayList<>();
         final Set<Workstations.Seated> counted = new HashSet<>();
+        final Set<Workstations.Seated> keyboardless = new HashSet<>();
         int amenitySum = 0;
         int crowdedSeats = 0;
         boolean hasButcher = false;
@@ -368,9 +375,15 @@ public class MTEMainframe extends MTEComputeFacility<MTEMainframe> implements IS
             for (final Workstations.Seated seated : Workstations
                 .within(world, screen.x() + 0.5, screen.y() + 0.5, screen.z() + 0.5, 2.5)) {
                 if (seated.employment()
-                    .getRole() == Employment.Role.WORKER && !counted.contains(seated)
-                    && (best == null || seated.distanceSq(screen.x() + 0.5, screen.y() + 0.5, screen.z() + 0.5)
-                        < best.distanceSq(screen.x() + 0.5, screen.y() + 0.5, screen.z() + 0.5))) {
+                    .getRole() != Employment.Role.WORKER || counted.contains(seated)) {
+                    continue;
+                }
+                if (!Workplace.atTerminal(world, seated.x(), seated.y(), seated.z())) {
+                    keyboardless.add(seated);
+                    continue;
+                }
+                if ((best == null || seated.distanceSq(screen.x() + 0.5, screen.y() + 0.5, screen.z() + 0.5)
+                    < best.distanceSq(screen.x() + 0.5, screen.y() + 0.5, screen.z() + 0.5))) {
                     best = seated;
                 }
             }
@@ -466,6 +479,8 @@ public class MTEMainframe extends MTEComputeFacility<MTEMainframe> implements IS
         }
         this.org = new OrgChart.Result(roots, chart.leads(), chart.directors(), chart.executives(), chart.unmanaged());
         this.terminals = screens.size();
+        keyboardless.removeAll(counted);
+        this.withoutKeyboard = keyboardless.size();
         this.workers = staff.size();
         this.amenities = staff.isEmpty() ? 0 : amenitySum / staff.size();
         this.crowded = crowdedSeats * 2 > staff.size() && !staff.isEmpty();
@@ -510,7 +525,7 @@ public class MTEMainframe extends MTEComputeFacility<MTEMainframe> implements IS
             return;
         }
         if (this.workers == 0) {
-            this.setOff(Bottleneck.NO_WORKER);
+            this.setOff(this.withoutKeyboard > 0 ? Bottleneck.NO_KEYBOARD : Bottleneck.NO_WORKER);
             this.showScreens();
             return;
         }

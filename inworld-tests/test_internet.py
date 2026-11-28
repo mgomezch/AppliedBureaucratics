@@ -21,6 +21,7 @@ from nhdev import NH_DEV_ROOT as REPO_ROOT  # noqa: F401 (puts the workspace on 
 from tools.agentharness import HarnessClient
 from tools.inworld_test_driver import InWorldTestDriver
 
+import test_mainframe
 from abtest import Chat, entities
 
 TAG = "ab_internet"
@@ -36,7 +37,8 @@ STANDING_ON = (70.5, Y, 432.5)
 
 
 def build_mainframe(client: HarnessClient, cx: int):
-    """A Mainframe facing north with its controller at (cx, Y, 420), and one screen and seat south of it."""
+    """A Mainframe facing north with its controller at (cx, Y, 420), and one workstation south of it:
+    a screen, a keyboard and a seat."""
     for x in range(cx - 3, cx + 4):
         for z in (420, 421, 422):
             for y in range(Y - 1, Y + 3):
@@ -62,6 +64,7 @@ def build_mainframe(client: HarnessClient, cx: int):
     client.set_block(cx, Y, 424, "OpenComputers:cable")
     client.set_block(cx, Y, 425, "OpenComputers:screen1")
     client.set_block(cx, Y, 427, "BiblioCraft:BiblioSeats")
+    test_mainframe.add_keyboards(client, xs=(cx,))
 
 
 def build_internet(client: HarnessClient):
@@ -168,7 +171,7 @@ def staff(client: HarnessClient, chat: Chat):
         client.right_click()
         assert chat.wait_for(r"Welcome aboard"), "Could not hire"
         client.select_item("appliedbureaucratics:signed_contract")
-        client.teleport(cx + 0.5, Y, 426.5)
+        client.teleport(cx + 1.5, Y, 427.5)
         time.sleep(0.4)
         client.look_at(cx + 0.5, Y + 0.4, 427.5)
         client.right_click()

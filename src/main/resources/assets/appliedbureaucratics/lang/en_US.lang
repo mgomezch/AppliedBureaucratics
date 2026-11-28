@@ -43,6 +43,8 @@ ab.bottleneck.no_seat=Limited by: no seat within 2 blocks.
 ab.bottleneck.no_seat.quip=Standing desks are a fad.
 ab.bottleneck.no_worker=Limited by: nobody on the seat.
 ab.bottleneck.no_worker.quip=The position remains open.
+ab.bottleneck.no_keyboard=Limited by: no keyboard in front of the screens.
+ab.bottleneck.no_keyboard.quip=They have been staring at it for hours.
 ab.bottleneck.no_desk=Limited by: no desk next to the seat.
 ab.bottleneck.no_desk.quip=Hot-desking has gone too far.
 ab.bottleneck.no_typewriter=Limited by: no typewriter (no planning).
@@ -82,7 +84,7 @@ ab.gui.coffee=Coffee
 ab.gui.party=Pizza party!
 
 tile.appliedbureaucratics.terminal_concentrator.name=Terminal Concentrator
-tile.appliedbureaucratics.terminal_concentrator.tooltip=Part of a Mainframe's back face. OC screens on its network are the office's terminals.
+tile.appliedbureaucratics.terminal_concentrator.tooltip=Part of a Mainframe's back face. OC screens on its network, each with a keyboard in front, are the office's terminals.
 item.appliedbureaucratics.tape_reel.name=Magnetic Tape Reel
 item.appliedbureaucratics.tape_reel.tooltip=Filing for a Mainframe, in an input bus. Not consumed.
 item.appliedbureaucratics.high_density_tape_reel.name=High-Density Tape Reel

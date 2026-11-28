@@ -1,5 +1,6 @@
 package com.gtnewhorizons.appliedbureaucratics.workforce;
 
+import net.minecraft.block.Block;
 import net.minecraft.world.World;
 
 import org.jspecify.annotations.Nullable;
@@ -25,8 +26,14 @@ DataWatcher, so the client's copy of the mount, which is made from a spawn packe
 turns the rider the same way as the server's.  The server looks for the workstation again every second, so a seat
 furnished after its worker sat down, or refurnished, turns its worker round.  A seat with no workstation keeps the
 yaw it had: when the worker sat down, the way the player who seated it was looking.
+
+A Mainframe terminal is a whole OC workstation, not just a screen: Workplace.atTerminal holds when the seat has an
+OC keyboard beside it (at seat height or one above, on a desk) and an OC screen right behind the keyboard, at the
+keyboard's height or one above.  In the office tests (test_mainframe.py, test_internet.py) the seat is at z 427,
+the keyboard on the floor at z 426 and the screen at z 425, so the worker faces north, at the keyboard and screen.
+MTEMainframe counts a worker at a screen only when its seat passes atTerminal.
 */
-/// Where a seated worker works: which way it faces.
+/// Where a seated worker works: which way it faces, and whether its seat is an OpenComputers workstation.
 /// See Note [Facing the workstation].
 public final class Workplace {
 
@@ -49,5 +56,26 @@ public final class Workplace {
             }
         }
         return null;
+    }
+
+    /// Whether the seat at `x, y, z` has an OC keyboard beside it with a screen right behind the keyboard.
+    public static boolean atTerminal(final World world, final int x, final int y, final int z) {
+        for (final int[] side : SIDES) {
+            for (int dy = 0; dy <= 1; dy++) {
+                final int kx = x + side[0];
+                final int ky = y + dy;
+                final int kz = z + side[1];
+                if (!Furniture.KEYBOARD.matches(world.getBlock(kx, ky, kz))) {
+                    continue;
+                }
+                for (int sy = 0; sy <= 1; sy++) {
+                    final Block behind = world.getBlock(kx + side[0], ky + sy, kz + side[1]);
+                    if (Furniture.SCREEN.matches(behind)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 }

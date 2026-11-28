@@ -4,12 +4,14 @@ In-world test: the Mainframe, the EV facility (design document, section 6.2; M3 
 
 A Mainframe facing north, its four racks holding tier 1 servers (32 FTE of hardware), a debug energy hatch, an
 maintenance hatch (fixed by the harness) and input and output buses at the back, and its Terminal Concentrator wired by OC cable to five
-separate tier 1 screens.  Each screen has a BiblioCraft seat two blocks south of it.  The ME network is the Desk
+separate tier 1 screens.  Each screen is a workstation: an OC keyboard on the floor south of it and a BiblioCraft
+seat south of the keyboard.  The ME network is the Desk
 test's: a creative controller, a drive, and an interface whose stone pattern pushes cobblestone into a chest.
 
   Formed:      the structure forms; with nobody seated it reports no workers.
   Office:      five librarians, hired and seated, are five terminals' workers: five unmanaged roots are worth
-               5 / sqrt(5) FTE, planning at that x 4 x 1.5 steps/s while idle.
+               5 / sqrt(5) FTE, planning at that x 4 x 1.5 steps/s while idle.  Each faces its keyboard, north.
+  Keyboards:   with the keyboards gone, nobody counts and the Mainframe says why; put back, all five count again.
   A craft:     200 stone dispatch at the office's rate, about 2.2 ops/s (librarians have no dispatch affinity).
   Management:  an Enderman at a desk with a bell, under a roof so the sun does not make it teleport, becomes their
                team lead: 5 x 0.8 = 4 FTE.
@@ -25,7 +27,7 @@ from nhdev import NH_DEV_ROOT as REPO_ROOT  # noqa: F401 (puts the workspace on 
 from tools.agentharness import HarnessClient
 from tools.inworld_test_driver import InWorldTestDriver
 
-from abtest import Chat, count_items, desk_status, entities
+from abtest import NORTH_YAW, Chat, count_items, desk_status, entities, faces
 
 TAG = "ab_mainframe"
 Y = 6
@@ -39,6 +41,7 @@ INTERFACE = (60, Y, 418)
 PUSHED = (60, Y, 417)
 SCREENS_X = (56, 58, 60, 62, 64)
 SCREEN_Z = 425
+KEYBOARD_Z = 426
 SEAT_Z = 427
 MANAGER_SEAT = (60, Y, 430)
 STANDING_ON = (60.5, Y, 432.5)
@@ -84,13 +87,14 @@ def build(client: HarnessClient):
     client.set_container_slot(*INPUT_BUS, 2, "minecraft:emerald", 16)
     client.set_container_slot(*INPUT_BUS, 3, "minecraft:ender_pearl", 4)
     client.set_container_slot(*INPUT_BUS, 4, "appliedbureaucratics:component", 4, damage=4)
-    # The office: cable from the concentrator to a row of separate screens, a seat south of each.
+    # The office: cable from the concentrator to a row of separate screens, each with a keyboard and a seat south.
     client.set_block(60, Y, 423, "OpenComputers:cable")
     for x in range(55, 66):
         client.set_block(x, Y, 424, "OpenComputers:cable")
     for x in SCREENS_X:
         client.set_block(x, Y, SCREEN_Z, "OpenComputers:screen1")
         client.set_block(x, Y, SEAT_Z, "BiblioCraft:BiblioSeats")
+    add_keyboards(client)
     # A manager's office: a seat with a desk and a bell beside it.
     client.set_block(*MANAGER_SEAT, "BiblioCraft:BiblioSeats")
     client.set_block(MANAGER_SEAT[0] + 1, Y, MANAGER_SEAT[2], "BiblioCraft:BiblioDesk")
@@ -143,8 +147,10 @@ def wait_status(client: HarnessClient, chat: Chat, test, seconds: float = 30) ->
 
 
 def hire(client: HarnessClient, chat: Chat, entity: dict, contract: str):
-    """Hires `entity`, retrying with its new position if it walked off before the click landed."""
-    for attempt in range(4):
+    """Hires `entity`, retrying with its new position if it walked off before the click landed, and from another side
+    if something (a seat, when it wandered in among the workstations) was in the way."""
+    sides = ((0, 2.5), (2.5, 0), (-2.5, 0), (0, -2.5))
+    for attempt in range(8):
         if attempt:
             moved = [e for e in client.nearby_entities(radius=40) if e.get("id") == entity["id"]]
             if not moved:
@@ -152,7 +158,8 @@ def hire(client: HarnessClient, chat: Chat, entity: dict, contract: str):
             entity = moved[0]
         client.set_player_slot(0, contract, 1)
         client.select_item(contract)
-        client.teleport(entity["x"], Y, entity["z"] + 2.5)
+        dx, dz = sides[attempt % len(sides)]
+        client.teleport(entity["x"] + dx, Y, entity["z"] + dz)
         time.sleep(0.3)
         client.look_at(entity["x"], entity["y"] + 1.0, entity["z"])
         client.right_click()
@@ -161,10 +168,32 @@ def hire(client: HarnessClient, chat: Chat, entity: dict, contract: str):
     raise AssertionError(f"Could not hire {entity}")
 
 
-def seat(client: HarnessClient, chat: Chat, seat_pos: tuple):
+def add_keyboards(client: HarnessClient, xs=SCREENS_X, by_hand: bool = True):
+    """A keyboard on the floor between each screen and its seat.
+
+    By hand, each is placed as a player would, standing on the empty seat and looking north at the floor, so it lies
+    flat with its keys towards the seat; `set_block` would stand it on edge against the screen.  Placing by hand needs
+    the seats empty: a seated worker would take the click."""
+    if not by_hand:
+        for x in xs:
+            client.set_block(x, Y, KEYBOARD_Z, "OpenComputers:keyboard")
+        return
+    client.set_player_slot(0, "OpenComputers:keyboard", 64)
+    client.select_item("OpenComputers:keyboard")
+    for x in xs:
+        client.teleport(x + 0.5, Y + 1, SEAT_Z + 0.5)
+        time.sleep(0.3)
+        client.look_at(x + 0.5, Y, KEYBOARD_Z + 0.4)
+        client.right_click()
+        time.sleep(0.2)
+    client.set_player_slot(0)
+
+
+def seat(client: HarnessClient, chat: Chat, seat_pos: tuple, side=(1, 0)):
+    """Seats the worker of the selected signed contract, standing on `side` (dx, dz) of the seat: by default east,
+    away from where the workers wait and clear of the keyboard in front of the seat."""
     client.select_item("appliedbureaucratics:signed_contract")
-    # From the side away from where the workers wait, so none of them is in the way.
-    client.teleport(seat_pos[0] + 0.5, Y, seat_pos[2] - 1.5)
+    client.teleport(seat_pos[0] + 0.5 + side[0], Y, seat_pos[2] + 0.5 + side[1])
     time.sleep(0.3)
     client.look_at(seat_pos[0] + 0.5, seat_pos[1] + 0.4, seat_pos[2] + 0.5)
     time.sleep(0.3)
@@ -207,7 +236,26 @@ def check_office(client: HarnessClient, chat: Chat):
     assert s.get("workers") == len(SCREENS_X), s
     assert abs(s["fte"] - fte) < 0.01, f"Expected {fte:.3f} FTE from five unmanaged workers, got {s}"
     assert abs(s["planning"] - fte * 4 * 1.5) < 0.3, f"Expected about {fte * 6:.1f} steps/s, got {s}"
-    print(f"[✓] Five librarians: {s['fte']:.2f} FTE, planning at {s['planning']} steps/s")
+    seated = [e for e in entities(client, "EntityVillager", radius=30) if abs(e["z"] - (SEAT_Z + 0.5)) < 0.3]
+    assert len(seated) == len(SCREENS_X), f"Expected {len(SCREENS_X)} seated villagers, got {seated}"
+    turned = [e for e in seated if not faces(e, NORTH_YAW)]
+    assert not turned, f"Expected every worker to face its keyboard, north: {turned}"
+    print(f"[✓] Five librarians, facing their keyboards: {s['fte']:.2f} FTE, planning at {s['planning']} steps/s")
+
+
+def check_keyboards(client: HarnessClient, chat: Chat):
+    print("[*] Keyboards")
+    for x in SCREENS_X:
+        client.set_block(x, Y, KEYBOARD_Z, "minecraft:air")
+    s = wait_status(client, chat, lambda s: s.get("workers") == 0)
+    print(f"    {s}")
+    assert s.get("workers") == 0, f"Expected no workers without keyboards, got {s}"
+    assert "no keyboard" in s["head"], f"Expected the Mainframe to blame the keyboards, got {s}"
+    add_keyboards(client, by_hand=False)
+    client.teleport(*STANDING_ON)
+    s = wait_status(client, chat, lambda s: s.get("workers") == len(SCREENS_X))
+    assert s.get("workers") == len(SCREENS_X), f"Expected all five back at work, got {s}"
+    print("[✓] Without keyboards nobody counts, and the Mainframe says so; with them back, all five do")
 
 
 def check_craft(client: HarnessClient, chat: Chat):
@@ -252,7 +300,8 @@ def check_management(client: HarnessClient, chat: Chat):
             hired = True
             break
     assert hired, "Could not hire an Enderman"
-    seat(client, chat, MANAGER_SEAT)
+    # From the north: the desk is east of the seat, and the Enderman waits south of it.
+    seat(client, chat, MANAGER_SEAT, side=(0, -1))
     client.teleport(*STANDING_ON)
     s = wait_status(client, chat, lambda s: s.get("leads") == 1)
     print(f"    {s}")
@@ -272,6 +321,7 @@ def main(port: int) -> bool:
         chat = Chat(client)
         check_formed(client, chat)
         check_office(client, chat)
+        check_keyboards(client, chat)
         check_craft(client, chat)
         check_management(client, chat)
 
