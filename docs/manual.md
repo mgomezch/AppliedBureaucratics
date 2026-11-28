@@ -37,7 +37,10 @@ seat, and a **typewriter** within a block of the seat (no typewriter, no plannin
 dispatch.  Bookcases within 3 blocks are its Filing: 64 bytes per book, 192 per vanilla bookshelf, up to 8 k.  Paper
 goes in the tray (planning runs at a quarter without it), emeralds pay wages.
 
-Sit on the seat yourself and you are the worker (*founder mode*).  Or hire one:
+Sit on the seat yourself and you are the worker (*founder mode*).  A window opens with busywork: add two digits,
+type a three-letter captcha, click the scary number in a grid, fill in a sudoku's one missing digit.  Each puzzle
+solved buys 4 s of focus, up to 10 s ahead, and the Desk works only while you are focused.  Close the window and it
+stops within ten seconds; right-click the typewriter to get back to work.  Or hire someone:
 
 1. Right-click a villager with an **Employment Contract**.  You get a **Signed Contract**: their file.
 2. Right-click the seat with the Signed Contract.  The villager sits down and stays there.
@@ -49,9 +52,29 @@ Librarians are better at planning, farmers at dispatch, priests at both.
 
 One number per facility, 0 to 100, drifting a point a minute towards a target.  Output is 25 % at 0, 100 % at 60 and
 120 % at 100.  The target starts at 50: +10 paid (−40 unpaid), amenities within 4 blocks of the seat up to +40 (light,
-a clock, a potted plant, a window with sky behind it, posters and paintings), +10 for coffee from a **Break Room
-Counter** within 16 blocks (cocoa beans count), +20 for a day after a party (put a cake or a pizza in the counter),
-−10 if crowded, smog, and the managers' penalties.
+a clock, a potted plant, a window with sky behind it, posters and paintings), the workers' break rooms up to +40, +20
+for a day after a pizza party, −10 if crowded, smog, and the managers' penalties.
+
+## Break rooms
+
+Three GregTech machines, each serving the workers seated in its area, within 4 blocks up or down: a break room serves
+its own floor.  It finds its workers every two minutes; a worker in reach of two keeps the better.
+
+| Machine | Power | Serves | Stocked with | Morale |
+| :--- | :--- | :--- | :--- | :--- |
+| **Water Cooler** | none | its chunk | an Iron Tanks tank of water on top: 250 mL a visit | +5 |
+| **Coffee Machine** | HV, 4096 EU a cup | 3 × 3 chunks | coffee beans; sugar, cocoa powder, milk or soy milk if it has them | +4, and +2 per extra |
+| **Snack Vending Machine** | EV, 16384 EU a sandwich | 5 × 5 chunks | sandwiches | +4, and +2 per kind in stock, up to 6 |
+
+A **microkitchen** around the machine (6 blocks across, 2 down, 3 up) adds to its bonus: 4 per kind of kitchen fixture
+(Cooking for Blockheads' sink, fridge, oven, counters, cabinets, toaster…), up to 20, and 1 per plant (potted
+plants, Natura's bushes, crops, saplings), up to 5.  The coffee's bonus is the facility's: an average of the extras
+in its workers' recent cups.  Cake or pizza in any of them throws a pizza party.
+
+Workers bound to an open break room take **breaks**: 30 s every 5 minutes, both up to a quarter more at the best
+kitchen.  A worker on a break walks to the break room, is served, wanders about, and walks back; meanwhile its
+facility does without it ("on a break").  A paid manager keeps breaks to 20 s every 7 minutes, however good the
+kitchen.
 
 **Crunch**: a redstone signal on the tray or controller.  Output ×1.5, morale target −30.  Worth it for about 25
 minutes.

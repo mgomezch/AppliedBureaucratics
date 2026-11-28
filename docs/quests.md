@@ -5,7 +5,7 @@ Suggested quests, in order.  They belong in the pack's quest book, not in the mo
 1. **Help Wanted** (HV).  Craft a Requisition Tray.  *"Autocrafting is a favour you ask of one clerk."*
 2. **Founder Mode** (HV).  Sit at your own Desk and plan a craft.  *"You are the IT department."*
 3. **Competitive Salary** (HV).  Hire a villager with an Employment Contract and seat them.  Reward: emeralds.
-4. **In Lieu of a Raise** (HV).  Build a Break Room Counter and stock it with coffee.
+4. **In Lieu of a Raise** (HV).  Put a Water Cooler under a tank of water near your Desk.
 5. **Big Iron** (EV).  Form a Mainframe with four servers and an office of four terminals.
 6. **Middle Management** (EV).  Seat an Enderman as a team lead.  *"Avoid eye contact."*
 7. **The Corner Office** (EV).  Seat a boss as a director.  *"My door is always open."*

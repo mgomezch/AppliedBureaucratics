@@ -236,7 +236,8 @@ dispatch  = dispatch FTE × 1  ops/s       (per facility, per job)</div>
           <li><b>Emeralds</b> in the tray pay wages.</li>
         </ul>
       </div>
-      <p>Then staff it.  <mark>Founder mode</mark>: sit on the seat yourself and you're the worker.  It's the cheapest hire you'll ever make and the least scalable.  When you're ready to delegate, read the next section.</p>
+      <p>Then staff it.  <mark>Founder mode</mark>: sit on the seat yourself and you're the worker.  It's the cheapest hire you'll ever make and the least scalable.  A window opens with your work: add two digits, type a three-letter captcha, click the scary number in a grid of digits, fill in the one missing digit of a 3 × 3 sudoku.  Each one takes two seconds and buys you four seconds of focus, up to ten ahead, and the Desk works only while you're focused.  Close the window and it stops within ten seconds; right-click the typewriter to get back on the grind.  When you're ready to delegate, read the next section.</p>
+      <p class="aside">The quotes around the puzzles are from my LinkedIn.  You're welcome.</p>
       <div class="pair narrow-wide">
         <figure><img src="img/tray_gui.jpg" alt="Requisition Tray window: Working, a contracted employee is at the desk, planning 6.0 steps/s, dispatch 0.0 ops/s, filing 0 of 1152 B, morale 61, paper and wages slots, coffee and pizza party" width="640" height="669" loading="lazy"><figcaption><b>The tray's window</b> is your one-page board deck: the bottleneck, who's working, the four figures, paper on the left, wages on the right, perks at the bottom.</figcaption></figure>
         <figure><img src="img/nei_tray.jpg" alt="NEI shaped crafting recipe for the Requisition Tray" width="560" height="560" loading="lazy"><figcaption><b>The tray's recipe</b>, as NEI shows it in the showcase pack.</figcaption></figure>
@@ -282,8 +283,8 @@ morale 100 → 120 % output</div>
         <tbody>
           <tr><td>Wages paid</td><td class="n plus">+10</td><td>Unpaid: <span class="n">−40</span></td></tr>
           <tr><td>Amenities within 4 blocks of the seat</td><td class="n plus">up to +40</td><td>Light level 10 or more +5; a clock +5; a potted plant +5; a window with sky behind it +10; each poster or painting +1</td></tr>
-          <tr><td>Coffee</td><td class="n plus">+10</td><td>A stocked Break Room Counter within 16 blocks.  Cocoa beans count.  A cup lasts four worker-days.</td></tr>
-          <tr><td>Party</td><td class="n plus">+20</td><td>For a day after you put a cake or a pizza in the counter</td></tr>
+          <tr><td>Break room</td><td class="n plus">up to +40</td><td>The workers' break rooms, averaged.  See <a href="#breakrooms">break rooms</a></td></tr>
+          <tr><td>Party</td><td class="n plus">+20</td><td>For a day after you put a cake or a pizza in a break room machine</td></tr>
           <tr><td>Crowded</td><td class="n minus">−10</td><td>More than 6 seats in the 5 × 5 around the seat</td></tr>
           <tr><td>Smog</td><td class="n minus">−5 to −20</td><td>−5 at the chunk's pollution smog threshold, up to −20 at four times it</td></tr>
           <tr><td>Managers</td><td class="n minus">0 to −15 each</td><td>See the <a href="#managers">management table</a></td></tr>
@@ -292,6 +293,20 @@ morale 100 → 120 % output</div>
       </table></div>
       <p><mark>Crunch</mark> is a redstone signal on the tray or the controller: output ×1.5, morale target −30.  It's worth it for about 25 minutes, until morale catches up with you.  Use it for a launch, not a lifestyle.</p>
       <p class="aside">Coffee is cheaper than raises.  A pizza party is cheaper than coffee.</p>
+
+      <h3 id="breakrooms">Break rooms</h3>
+      <p>Your people need somewhere to stand around.  Give them one, and they'll come back happier and a little later.  There are three machines, and each finds its own workers every two minutes: everyone seated in its area, within four blocks up or down.  So it serves one floor, and a tower needs one per floor.</p>
+      <div class="tbl"><table>
+        <thead><tr><th>Machine</th><th>Power</th><th>Serves</th><th>Stock</th><th>Morale</th></tr></thead>
+        <tbody>
+          <tr><td>Water Cooler</td><td>none</td><td>its chunk</td><td>An Iron Tanks tank of water on top: 250 mL a visit</td><td class="n plus">+5</td></tr>
+          <tr><td>Coffee Machine</td><td>HV, 4096 EU a cup</td><td>3 × 3 chunks</td><td>Coffee beans.  Sugar, cocoa powder and milk (or soy milk) if it has them</td><td class="n plus">+4, +2 per extra</td></tr>
+          <tr><td>Snack Vending Machine</td><td>EV, 16384 EU a sandwich</td><td>5 × 5 chunks</td><td>Sandwiches</td><td class="n plus">+4, +2 per kind, up to 6</td></tr>
+        </tbody>
+      </table></div>
+      <p>Then make it a <mark>microkitchen</mark>.  Cooking for Blockheads fixtures within six blocks of the machine add 4 each per kind (sink, fridge, oven, counters, cabinets, toaster), up to 20.  Plants add 1 each, up to 5: potted plants, Natura's bushes, anything that grows.  The coffee's bonus belongs to the office: it's the average of the extras in their recent cups.</p>
+      <p>The catch is <mark>breaks</mark>.  A worker bound to an open break room takes 30 seconds every five minutes, walks over, gets served, loiters, and walks back.  The better the kitchen, the longer and more often, by up to a quarter.  While they're away the Desk or Mainframe says "on a break" and does without them.  A paid manager cuts it to 20 seconds every seven minutes, however nice the kitchen is.  Managers also make their presence felt now and then: the Endermen scream.</p>
+      <p class="aside">Free snacks are a retention strategy.  Retention is a strategy for not paying recruiters.</p>
     </section>
 
     <!-- ===================================================================== -->
@@ -479,12 +494,14 @@ re-verifying  = 20 % × (1 − training) chance per finished plan</div>
           <tr><td>no power or no ME channel</td><td>Power the network, and give the tray or controller a channel</td></tr>
           <tr><td>no seat within 2 blocks</td><td>Put a BiblioCraft seat within 2 blocks of the tray</td></tr>
           <tr><td>nobody on the seat</td><td>Hire someone, or sit down yourself</td></tr>
+          <tr><td>on a break</td><td>Wait.  Or hire a manager</td></tr>
+          <tr><td>the founder is not grinding</td><td>Solve a puzzle.  Right-click the typewriter if you closed the window</td></tr>
           <tr><td>no keyboard in front of the screens</td><td>A Mainframe terminal is seat, keyboard, then screen.  Put the keyboard between them</td></tr>
           <tr><td>no desk next to the seat</td><td>A BiblioCraft desk beside the seat</td></tr>
           <tr><td>no typewriter (no planning)</td><td>A typewriter within a block of the seat</td></tr>
           <tr><td>paper (planning at 25 %)</td><td>Paper in the tray, or paper or punch cards in the input bus</td></tr>
           <tr><td>wages unpaid</td><td>Emeralds in the tray or input bus</td></tr>
-          <tr><td>morale</td><td>Pay, amenities, coffee, a party, fewer managers, less smog, no crunch</td></tr>
+          <tr><td>morale</td><td>Pay, amenities, a break room, a party, fewer managers, less smog, no crunch</td></tr>
           <tr><td>no books to file plans in</td><td>Bookcases, tape reels or disk arrays</td></tr>
           <tr><td>the structure is incomplete</td><td>Check the multiblock against its NEI preview</td></tr>
           <tr><td>hardware</td><td>Servers in the Mainframe's racks</td></tr>
@@ -502,7 +519,7 @@ re-verifying  = 20 % × (1 − training) chance per finished plan</div>
         <li><b>Help Wanted</b> (HV): craft a Requisition Tray.</li>
         <li><b>Founder Mode</b> (HV): sit at your own Desk and plan a craft.</li>
         <li><b>Competitive Salary</b> (HV): hire a villager and seat them.</li>
-        <li><b>In Lieu of a Raise</b> (HV): stock a Break Room Counter with coffee.</li>
+        <li><b>In Lieu of a Raise</b> (HV): put a Water Cooler under a tank of water near your Desk.</li>
         <li><b>Big Iron</b> (EV): form a Mainframe with four servers and an office of four terminals.</li>
         <li><b>Middle Management</b> (EV): seat an Enderman as a team lead.</li>
         <li><b>The Corner Office</b> (EV): seat a boss as a director.</li>
