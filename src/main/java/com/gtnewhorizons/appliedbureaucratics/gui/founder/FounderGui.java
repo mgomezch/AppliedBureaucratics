@@ -45,8 +45,9 @@ Moving parts:
                         (WorkforceEvents.onRightClickBlock); founderSolved counts a solve, on the server.
   FounderGui            the panel: puzzle, quotes, tickets closed, focus bar.
   PuzzleWidget          one puzzle at a time, taking keys (passed down by the panel) and clicks.
-  PuzzleRenderer        the looks; the sudoku's digits are textures (textures/gui/serif_N.png) rendered from Noto
-                        Serif Display (SIL Open Font License), since Minecraft's font has no serif.
+  PuzzleRenderer        the looks.  Minecraft's font has no serif, so the sudoku's digits are textures
+                        (textures/gui/serif_N.png), rendered from Noto Serif Display when the mod is built:
+                        see Note [Textures are drawn at build time].
 
 Puzzles live on the client, which sends the server one thing: a solve, as the C2S write of an IntSyncValue
 ("tickets") whose server setter calls TileRequisitionTray.founderSolved.  The minimum gap is what keeps a client

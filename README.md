@@ -33,3 +33,9 @@ cd ../AppliedBureaucratics && ./gradlew build
 ```
 
 Unit tests run with `./gradlew test`; the in-world tests in `inworld-tests/` need the nh-dev workspace's test harness.
+
+## Textures
+
+Every texture is drawn by `tools/textures` when the mod is built (`./gradlew generateTextures`, run by
+`processResources`); none is kept as an image.  The sudoku digits of founder mode are rendered from Noto Serif
+Display, kept in `tools/textures/fonts` with its license.
