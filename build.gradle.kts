@@ -28,3 +28,6 @@ val generateTextures by tasks.registering(JavaExec::class) {
 sourceSets.main {
     resources.srcDir(generateTextures)
 }
+
+// The jar carries the license and the third-party notices.
+tasks.jar { into("META-INF") { from("LICENSE.txt", "THIRD_PARTY_NOTICES.md") } }
