@@ -2,7 +2,7 @@
 """
 Builds the Applied Bureaucratics showcase world: a bit of everything, along the X axis of a superflat world.
 
-  x 24..40    The Desk (HV): a librarian at a BiblioCraft desk, bookshelves, a Break Room Counter with coffee.
+  x 24..40    The Desk (HV): a librarian at a BiblioCraft desk, bookshelves, a Water Cooler under a tank.
               South of it (z ~440), a legacy crafting CPU on a network of its own, which plans unmetered.
   x 50..90    The Mainframe (EV): five terminals with librarians and an Enderman team lead under a roof, linked by a
               Router Port to the Internet (IV) at z 440, with a second, one-terminal Mainframe at x 80, and a Gig
@@ -156,6 +156,59 @@ def add_terminal(client: HarnessClient, cable: tuple, stand: tuple):
     client.set_player_slot(0)
 
 
+# Break rooms (Note [Break rooms]): a Water Cooler by the Desk; a Coffee Machine and a Snack Vending Machine in the
+# Mainframe's office, each with a microkitchen around it.  Every machine faces south.
+COOLER = (36, 4, 422)
+COFFEE = (56, 6, 433)
+SNACKS = (64, 6, 433)
+DEBUG_GENERATOR = 15498
+SANDWICHES = ("harvestcraft:blueberryjellysandwichItem", "harvestcraft:honeysandwichItem",
+              "harvestcraft:chickensandwichItem", "harvestcraft:toastsandwichItem")
+
+
+def break_rooms(client: HarnessClient, chat: Chat):
+    client.teleport(*test_desk.STANDING_ON)
+    time.sleep(1)
+    client.set_gt_machine(*COOLER, 32210, 3)
+    client.set_block(COOLER[0], COOLER[1] + 1, COOLER[2], "irontank:ironTank")
+    time.sleep(0.5)
+    client.fill_fluid(COOLER[0], COOLER[1] + 1, COOLER[2], "water", 32000)
+    client.set_block(COOLER[0] + 1, COOLER[1], COOLER[2], "minecraft:flower_pot")
+    client.teleport(*test_mainframe.STANDING_ON)
+    time.sleep(1)
+    for pos, machine in ((COFFEE, 32211), (SNACKS, 32212)):
+        client.set_gt_machine(*pos, machine, 3)
+        # A debug generator under it keeps it charged.
+        client.set_gt_machine(pos[0], pos[1] - 1, pos[2], DEBUG_GENERATOR, 1)
+        client.charge_energy(*pos, 1000000)
+    client.set_container_slot(*COFFEE, 3, "harvestcraft:coffeebeanItem", 64)
+    client.set_container_slot(*COFFEE, 4, "minecraft:sugar", 64)
+    client.set_container_slot(*COFFEE, 5, "harvestcraft:cocoapowderItem", 64)
+    client.set_container_slot(*COFFEE, 6, "minecraft:cake", 1)
+    client.fill_fluid(*COFFEE, "milk", 16000)
+    for i, name in enumerate(SANDWICHES):
+        client.set_container_slot(*SNACKS, 3 + i, name, 64)
+    kitchen = {(COFFEE[0] - 1, COFFEE[1], COFFEE[2]): "cookingforblockheads:sink",
+               (COFFEE[0] + 1, COFFEE[1], COFFEE[2]): "cookingforblockheads:fridge",
+               (COFFEE[0] + 2, COFFEE[1], COFFEE[2]): "cookingforblockheads:cookingoven",
+               (COFFEE[0] + 3, COFFEE[1], COFFEE[2]): "cookingforblockheads:toaster",
+               (COFFEE[0] + 4, COFFEE[1], COFFEE[2]): "minecraft:flower_pot",
+               (SNACKS[0] + 1, SNACKS[1], SNACKS[2]): "minecraft:flower_pot"}
+    for pos, block in kitchen.items():
+        client.set_block(*pos, block)
+    time.sleep(1)
+    for pos in (COOLER, COFFEE, SNACKS):
+        chat.skip()
+        client.chat("/ab debug breakroom %d %d %d" % pos)
+        chat.wait_for(r"Scanning")
+    time.sleep(3)
+    for pos in (COOLER, COFFEE, SNACKS):
+        chat.skip()
+        client.chat("/ab status %d %d %d" % pos)
+        print("    " + str(chat.wait_for(r" at %d %d %d: " % pos)))
+        print("    " + str(chat.wait_for(r"serving")))
+
+
 def staff(client: HarnessClient):
     chat = Chat(client)
     # The Desk: a librarian, coffee.
@@ -166,9 +219,6 @@ def staff(client: HarnessClient):
     for slot in client.player_inventory():
         if slot and slot.get("id") == "appliedbureaucratics:signed_contract":
             client.set_player_slot(slot["slot"])
-    client.set_block(*test_desk.COUNTER, "appliedbureaucratics:break_room_counter")
-    client.set_container_slot(*test_desk.COUNTER, 0, "minecraft:dye", 64, damage=3)
-    client.set_container_slot(*test_desk.COUNTER, 1, "minecraft:cake", 1)
     # The Mainframe's office and its Enderman lead.
     client.teleport(*test_mainframe.STANDING_ON)
     client.fix_maintenance(*test_mainframe.CONTROLLER)
@@ -209,6 +259,7 @@ def staff(client: HarnessClient):
         time.sleep(0.5)
         client.place_multipart(*cable, "ae2:56")
         add_terminal(client, cable, stand)
+    break_rooms(client, chat)
     client.teleport(*SPAWN)
     time.sleep(5)
     for pos in (test_desk.TRAY, test_mainframe.CONTROLLER, test_internet.INTERNET, test_datacenter.CONTROLLER,
