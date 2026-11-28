@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityLiving;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.boss.IBossDisplayData;
 import net.minecraft.entity.monster.EntityEnderman;
 
@@ -63,6 +65,21 @@ public enum ManagerKind {
             return Class.forName(name);
         } catch (ClassNotFoundException | LinkageError e) {
             return null;
+        }
+    }
+
+    /// Makes the manager's noise, so the office hears who is in charge: an Enderman screams, and every other kind
+    /// makes its own idle sound, if it has one.
+    public void intimidate(final EntityLivingBase manager) {
+        if (this == ENDERMAN) {
+            manager.worldObj.playSoundAtEntity(
+                manager,
+                "mob.endermen.scream",
+                1.0F,
+                0.9F + manager.getRNG()
+                    .nextFloat() * 0.2F);
+        } else if (manager instanceof EntityLiving living) {
+            living.playLivingSound();
         }
     }
 

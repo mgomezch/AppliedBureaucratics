@@ -1,5 +1,7 @@
 package com.gtnewhorizons.appliedbureaucratics.workforce;
 
+import java.util.concurrent.ThreadLocalRandom;
+
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.nbt.NBTTagCompound;
@@ -26,6 +28,8 @@ public class EntityWorkstationMount extends Entity {
     private int seatZ;
     /// When to look at the seat and its workstation again. See Note [Spatial checks are staggered].
     private final Cadence seatCheck = new Cadence(Cadence.SMALL);
+    /// Ticks until a manager on this seat next makes its noise.
+    private int untilNoise = nextNoise();
 
     public EntityWorkstationMount(final World world) {
         super(world);
@@ -92,6 +96,14 @@ public class EntityWorkstationMount extends Entity {
             this.setDead();
             return;
         }
+        if (this.riddenByEntity instanceof EntityLivingBase rider && --this.untilNoise <= 0) {
+            this.untilNoise = nextNoise();
+            final Employment employment = Employment.of(rider);
+            final ManagerKind kind = ManagerKind.of(rider);
+            if (employment != null && employment.getRole() == Employment.Role.MANAGER && kind != null) {
+                kind.intimidate(rider);
+            }
+        }
         if (this.seatCheck.tick()) {
             if (!Furniture.SEAT.matches(this.worldObj.getBlock(this.seatX, this.seatY, this.seatZ))) {
                 if (this.riddenByEntity != null) {
@@ -105,6 +117,12 @@ public class EntityWorkstationMount extends Entity {
                 this.setFacing(facing);
             }
         }
+    }
+
+    /// 30 to 90 s.
+    private static int nextNoise() {
+        return 600 + ThreadLocalRandom.current()
+            .nextInt(1200);
     }
 
     @Override
