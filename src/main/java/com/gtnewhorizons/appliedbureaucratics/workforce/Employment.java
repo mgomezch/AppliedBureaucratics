@@ -10,7 +10,7 @@ import org.jspecify.annotations.Nullable;
 
 /*-
 Note [Contracted mobs are held by mixins] (generated)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 A contracted mob (a villager clerk, an Enderman team lead, a cleric) must sit at its workstation and do nothing
 else, and must go back to normal when released.  We do not edit its AI task lists for that: some mobs never read
 them (the Enderman and Blood Magic's demons use the legacy AI path, updateEntityActionState), other mods add or swap
@@ -22,7 +22,9 @@ Instead, one check, Employment.isOnShift, gates the mob's own behaviour at a few
                                 updateEntityActionState() are skipped while on shift.  Both are virtual, so
                                 this covers every mob and every override, including the villager's village and
                                 home logic (updateAITasks calls updateAITick).  Movement and physics still run,
-                                so the worker stays on its mount.
+                                so the worker stays on its mount.  A worker on a break (Employment.isOnBreak)
+                                runs Breaks.drive in updateAITasks' place, which walks it to its break room and
+                                back: see Note [Break rooms].
   MixinEntityEnderman_Shift     EntityEnderman's teleports return false while on shift, and it does not pick up
                                 blocks: a manager does not rearrange the office.
 
@@ -32,9 +34,10 @@ BiblioCraft seat.  Releasing a worker (a Pink Slip) clears its Employment and di
 Employment lives in a field added to EntityLivingBase (IEmployable), loaded lazily from the entity's Forge data
 (Entity.getEntityData(), tag TAG) and written back there whenever it changes, so it is saved with the entity.
 
-Things that are not mixins: on-shift mobs take no damage (WorkforceEvents.onAttack, LivingAttackEvent); right-
-clicking a worker shows its employee card instead of trading (WorkforceEvents.onInteract, EntityInteractEvent, which
-fires before EntityVillager.interact); the mount turns its rider to face its desk every tick.
+Things that are not mixins: mobs at work, on shift or on a break (Employment.isAtWork), take no damage
+(WorkforceEvents.onAttack, LivingAttackEvent); right-clicking a worker shows its employee card instead of trading
+(WorkforceEvents.onInteract, EntityInteractEvent, which fires before EntityVillager.interact); the mount turns its
+rider to face its workstation every tick (see Note [Facing the workstation]).
 */
 
 /// A contracted mob's employment. See Note [Contracted mobs are held by mixins].
