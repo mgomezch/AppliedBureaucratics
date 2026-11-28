@@ -28,7 +28,7 @@ from nhdev import NH_DEV_ROOT as REPO_ROOT  # noqa: F401 (puts the workspace on 
 from tools.agentharness import HarnessClient
 from tools.inworld_test_driver import InWorldTestDriver
 
-from abtest import Chat, count_items, desk_status, entities
+from abtest import EAST_YAW, Chat, count_items, desk_status, entities, faces
 
 TAG = "ab_desk"
 Y = 4
@@ -120,7 +120,9 @@ def check_seating(client: HarnessClient, chat: Chat):
     after = entities(client, "EntityVillager")[0]
     assert (after["x"], after["z"]) == (before["x"], before["z"]), f"The worker moved: {before} -> {after}"
     assert not entities(client, "EntitySeat"), "BiblioCraft seated the player instead"
-    print("[✓] The worker sits at the desk, and stays there")
+    # The typewriter is east of the seat, on the desk.
+    assert faces(after, EAST_YAW), f"Expected the worker to face the typewriter, east, got {after}"
+    print("[✓] The worker sits at the desk facing the typewriter, and stays there")
 
 
 def check_working(client: HarnessClient, chat: Chat):

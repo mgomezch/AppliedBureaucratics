@@ -165,19 +165,10 @@ public final class WorkforceActions {
         return null;
     }
 
-    /// The yaw that faces a desk or typewriter next to the seat, or away from the player if there is none.
+    /// The yaw that faces the seat's workstation, or the way the player looks if it has none.
+    /// See Note [Facing the workstation].
     private static float facing(final World world, final int x, final int y, final int z, final Entity player) {
-        final int[][] sides = { { 0, 1 }, { -1, 0 }, { 0, -1 }, { 1, 0 } };
-        for (int i = 0; i < sides.length; i++) {
-            final int dx = sides[i][0];
-            final int dz = sides[i][1];
-            for (int dy = 0; dy <= 1; dy++) {
-                final net.minecraft.block.Block block = world.getBlock(x + dx, y + dy, z + dz);
-                if (Furniture.DESK.matches(block) || Furniture.TYPEWRITER.matches(block)) {
-                    return i * 90F;
-                }
-            }
-        }
-        return player.rotationYaw;
+        final Float facing = Workplace.facing(world, x, y, z);
+        return facing != null ? facing : player.rotationYaw;
     }
 }

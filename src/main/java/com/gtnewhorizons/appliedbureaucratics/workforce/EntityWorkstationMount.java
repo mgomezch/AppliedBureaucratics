@@ -10,17 +10,19 @@ import com.gtnewhorizons.appliedbureaucratics.integration.bibliocraft.Furniture;
 /// The invisible seat a contracted mob rides at its workstation, placed on a BiblioCraft seat. Riding one is what
 /// puts a worker on shift: see Note [Contracted mobs are held by mixins].
 ///
-/// It keeps its rider turned towards its desk, and removes itself when it has had no rider for a second or when the
+/// It keeps its rider turned towards its workstation (see Note [Facing the workstation]), and removes itself when it
+/// has had no rider for a second or when the
 /// seat block under it is gone.
 public class EntityWorkstationMount extends Entity {
 
     /// Where the rider's feet are, above the seat block's base.
     private static final double SEAT_HEIGHT = 0.35;
+    /// The DataWatcher slot of the yaw the rider faces.
+    private static final int FACING = 20;
 
     private int seatX;
     private int seatY;
     private int seatZ;
-    private float facing;
 
     public EntityWorkstationMount(final World world) {
         super(world);
@@ -34,7 +36,7 @@ public class EntityWorkstationMount extends Entity {
         this.seatX = x;
         this.seatY = y;
         this.seatZ = z;
-        this.facing = facing;
+        this.setFacing(facing);
         this.setLocationAndAngles(x + 0.5, y + SEAT_HEIGHT, z + 0.5, facing, 0);
     }
 
@@ -54,8 +56,18 @@ public class EntityWorkstationMount extends Entity {
         return this.seatX == x && this.seatY == y && this.seatZ == z;
     }
 
+    public float getFacing() {
+        return this.dataWatcher.getWatchableObjectFloat(FACING);
+    }
+
+    private void setFacing(final float facing) {
+        this.dataWatcher.updateObject(FACING, facing);
+    }
+
     @Override
-    protected void entityInit() {}
+    protected void entityInit() {
+        this.dataWatcher.addObject(FACING, 0F);
+    }
 
     @Override
     public void onUpdate() {
@@ -64,9 +76,10 @@ public class EntityWorkstationMount extends Entity {
         this.prevPosZ = this.posZ;
         this.motionX = this.motionY = this.motionZ = 0;
         if (this.riddenByEntity instanceof EntityLivingBase rider) {
-            rider.rotationYaw = rider.prevRotationYaw = this.facing;
-            rider.rotationYawHead = rider.prevRotationYawHead = this.facing;
-            rider.renderYawOffset = rider.prevRenderYawOffset = this.facing;
+            final float facing = this.getFacing();
+            rider.rotationYaw = rider.prevRotationYaw = facing;
+            rider.rotationYawHead = rider.prevRotationYawHead = facing;
+            rider.renderYawOffset = rider.prevRenderYawOffset = facing;
         }
         if (this.worldObj.isRemote) {
             return;
@@ -76,12 +89,18 @@ public class EntityWorkstationMount extends Entity {
             this.setDead();
             return;
         }
-        if (this.ticksExisted % 20 == 0
-            && !Furniture.SEAT.matches(this.worldObj.getBlock(this.seatX, this.seatY, this.seatZ))) {
-            if (this.riddenByEntity != null) {
-                this.riddenByEntity.mountEntity(null);
+        if (this.ticksExisted % 20 == 0) {
+            if (!Furniture.SEAT.matches(this.worldObj.getBlock(this.seatX, this.seatY, this.seatZ))) {
+                if (this.riddenByEntity != null) {
+                    this.riddenByEntity.mountEntity(null);
+                }
+                this.setDead();
+                return;
             }
-            this.setDead();
+            final Float facing = Workplace.facing(this.worldObj, this.seatX, this.seatY, this.seatZ);
+            if (facing != null && facing != this.getFacing()) {
+                this.setFacing(facing);
+            }
         }
     }
 
@@ -115,7 +134,7 @@ public class EntityWorkstationMount extends Entity {
         this.seatX = tag.getInteger("seatX");
         this.seatY = tag.getInteger("seatY");
         this.seatZ = tag.getInteger("seatZ");
-        this.facing = tag.getFloat("facing");
+        this.setFacing(tag.getFloat("facing"));
     }
 
     @Override
@@ -123,6 +142,6 @@ public class EntityWorkstationMount extends Entity {
         tag.setInteger("seatX", this.seatX);
         tag.setInteger("seatY", this.seatY);
         tag.setInteger("seatZ", this.seatZ);
-        tag.setFloat("facing", this.facing);
+        tag.setFloat("facing", this.getFacing());
     }
 }

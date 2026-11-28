@@ -10,8 +10,9 @@ import com.gtnewhorizons.appliedbureaucratics.AppliedBureaucratics;
 
 import cpw.mods.fml.common.registry.GameData;
 
-/// The furniture facilities are built from, by role. BiblioCraft is closed source, so blocks are recognised by
-/// registry name and nothing of BiblioCraft is called. The names are config values ([#configure]), resolved once at
+/// The furniture facilities are built from, by role: BiblioCraft's, and the OpenComputers keyboards and screens of a
+/// Mainframe's terminals. BiblioCraft is closed source, so blocks are recognised by registry name and nothing of
+/// BiblioCraft is called. The names are config values ([#configure]), resolved once at
 /// load ([#resolveAll]); matching a block is then an identity lookup.
 public enum Furniture {
 
@@ -24,7 +25,9 @@ public enum Furniture {
     LAMP("BiblioCraft:BiblioLamp", "BiblioCraft:BiblioIronLamp", "BiblioCraft:BiblioLantern",
         "BiblioCraft:BiblioIronLantern"),
     POSTER("BiblioCraft:BiblioFancySign"),
-    PLANT("minecraft:flower_pot");
+    PLANT("minecraft:flower_pot"),
+    KEYBOARD("OpenComputers:keyboard"),
+    SCREEN("OpenComputers:screen1", "OpenComputers:screen2", "OpenComputers:screen3");
 
     private String[] names;
     private Set<Block> blocks = Collections.emptySet();

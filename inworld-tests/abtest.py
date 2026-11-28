@@ -83,6 +83,17 @@ def entities(client: HarnessClient, cls: str, radius: float = 12) -> List[dict]:
     return [e for e in client.nearby_entities(radius=radius) if e.get("class") == cls]
 
 
+# Minecraft yaws: 0 faces south (+z), 90 west, 180 north, 270 east.
+SOUTH_YAW, WEST_YAW, NORTH_YAW, EAST_YAW = 0, 90, 180, 270
+
+
+def faces(entity: dict, yaw: float) -> bool:
+    """Whether `entity` (from nearby_entities) faces `yaw`, on the server and in the client's copy."""
+    def close(a):
+        return a is not None and abs((a - yaw + 180) % 360 - 180) < 1
+    return close(entity.get("yaw")) and close(entity.get("client_body_yaw"))
+
+
 def count_items(client: HarnessClient, pos: tuple, name: str) -> int:
     info = client.blockinfo(*pos)
     return sum(i.get("count", 0) for i in info.get("items", []) if name in i.get("name", ""))
