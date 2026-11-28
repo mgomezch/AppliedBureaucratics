@@ -150,7 +150,7 @@ ab.breakroom.gui.kitchen=Kitchen: %3$s/%4$s
 ab.breakroom.gui.water_cooler=Water: morale +%s
 ab.breakroom.gui.coffee_machine=Coffee: house blend
 ab.breakroom.gui.snack_machine=Sandwiches: morale +%s
-ab.breakroom.gui.party=, pizza party!
+ab.breakroom.gui.party= Pizza party!
 
 # Founder mode. See Note [Founder mode].
 ab.founder.title=FOUNDER MODE

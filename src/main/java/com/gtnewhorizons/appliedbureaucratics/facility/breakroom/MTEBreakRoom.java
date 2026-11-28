@@ -663,7 +663,9 @@ public class MTEBreakRoom extends MTEBasicTank {
             .childPadding(2)
             .pos(8, 18)
             .child(
-                IKey.dynamic(() -> StatCollector.translateToLocal(Status.values()[status.getIntValue()].key()))
+                IKey.dynamic(
+                    () -> StatCollector.translateToLocal(Status.values()[status.getIntValue()].key())
+                        + (party.getIntValue() != 0 ? StatCollector.translateToLocal("ab.breakroom.gui.party") : ""))
                     .asWidget())
             .child(
                 IKey.dynamic(
@@ -685,8 +687,7 @@ public class MTEBreakRoom extends MTEBasicTank {
             .child(
                 IKey.dynamic(
                     () -> StatCollector
-                        .translateToLocalFormatted("ab.breakroom.gui." + this.kind.name, stock.getIntValue())
-                        + (party.getIntValue() != 0 ? StatCollector.translateToLocal("ab.breakroom.gui.party") : ""))
+                        .translateToLocalFormatted("ab.breakroom.gui." + this.kind.name, stock.getIntValue()))
                     .asWidget());
 
         final Flow supplies = Flow.row()
