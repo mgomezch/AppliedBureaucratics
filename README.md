@@ -39,3 +39,7 @@ Unit tests run with `./gradlew test`; the in-world tests in `inworld-tests/` nee
 Every texture is drawn by `tools/textures` when the mod is built (`./gradlew generateTextures`, run by
 `processResources`); none is kept as an image.  The sudoku digits of founder mode are rendered from Noto Serif
 Display, kept in `tools/textures/fonts` with its license.
+
+## License
+
+GPL-3.0 or later: see [LICENSE](LICENSE), which also lists the third-party material and its licenses.
