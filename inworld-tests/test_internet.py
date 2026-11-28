@@ -163,22 +163,8 @@ def staff(client: HarnessClient, chat: Chat):
     for cx in MAINFRAMES:
         villager = min((e for e in entities(client, "EntityVillager", radius=40) if "," not in e["name"]),
                        key=lambda e: (e["x"] - (cx + 0.5)) ** 2 + (e["z"] - 431.5) ** 2)
-        client.set_player_slot(0, "appliedbureaucratics:employment_contract", 1)
-        client.select_item("appliedbureaucratics:employment_contract")
-        client.teleport(villager["x"], Y, villager["z"] + 2.5)
-        time.sleep(0.4)
-        client.look_at(villager["x"], villager["y"] + 1.0, villager["z"])
-        client.right_click()
-        assert chat.wait_for(r"Welcome aboard"), "Could not hire"
-        client.select_item("appliedbureaucratics:signed_contract")
-        client.teleport(cx + 1.5, Y, 427.5)
-        time.sleep(0.4)
-        client.look_at(cx + 0.5, Y + 0.4, 427.5)
-        client.right_click()
-        assert chat.wait_for(r"has been assigned"), "Could not seat"
-        for s in client.player_inventory():
-            if s and s.get("id") == "appliedbureaucratics:signed_contract":
-                client.set_player_slot(s["slot"])
+        test_mainframe.hire(client, chat, villager, "appliedbureaucratics:employment_contract")
+        test_mainframe.seat(client, chat, (cx, Y, 427))
     client.teleport(*STANDING_ON)
 
 
@@ -193,7 +179,9 @@ def check_linking(client: HarnessClient, chat: Chat):
 
 def check_pooling(client: HarnessClient, chat: Chat):
     print("[*] Pooling")
-    s = wait_for_text(client, chat, INTERNET, r"planning [1-9][\d.]* steps/s")
+    # The network's total catches up with the Internet's a moment later: wait for both.
+    s = wait_for_text(client, chat, INTERNET,
+                      r"planning [1-9][\d.]* steps/s.*network: \d+ facilities, planning [1-9]\d\.\d+")
     planning = number(r"planning ([\d.]+) steps/s", s["text"])
     network = number(r"network: \d+ facilities, planning ([\d.]+) steps/s", s["text"])
     print("    " + s["text"])
