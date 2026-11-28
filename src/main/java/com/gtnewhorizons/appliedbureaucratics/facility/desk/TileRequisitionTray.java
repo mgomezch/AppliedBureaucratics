@@ -3,9 +3,12 @@ package com.gtnewhorizons.appliedbureaucratics.facility.desk;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
+
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.passive.EntityVillager;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Items;
 import net.minecraft.inventory.ISidedInventory;
 import net.minecraft.item.ItemStack;
@@ -17,10 +20,19 @@ import net.minecraftforge.common.util.ForgeDirection;
 
 import org.jspecify.annotations.Nullable;
 
+import com.cleanroommc.modularui.api.IGuiHolder;
+import com.cleanroommc.modularui.factory.GuiFactories;
+import com.cleanroommc.modularui.factory.PosGuiData;
+import com.cleanroommc.modularui.screen.ModularPanel;
+import com.cleanroommc.modularui.screen.ModularScreen;
+import com.cleanroommc.modularui.screen.UISettings;
+import com.cleanroommc.modularui.value.sync.PanelSyncManager;
+import com.gtnewhorizons.appliedbureaucratics.AppliedBureaucratics;
 import com.gtnewhorizons.appliedbureaucratics.compute.Affinity;
 import com.gtnewhorizons.appliedbureaucratics.compute.CoffeeLog;
 import com.gtnewhorizons.appliedbureaucratics.compute.ComputeSettings;
 import com.gtnewhorizons.appliedbureaucratics.compute.FacilityOutput;
+import com.gtnewhorizons.appliedbureaucratics.compute.FounderFocus;
 import com.gtnewhorizons.appliedbureaucratics.compute.Morale;
 import com.gtnewhorizons.appliedbureaucratics.compute.MoraleTarget;
 import com.gtnewhorizons.appliedbureaucratics.compute.OrgUnit;
@@ -33,6 +45,7 @@ import com.gtnewhorizons.appliedbureaucratics.facility.Bottleneck;
 import com.gtnewhorizons.appliedbureaucratics.facility.FacilitySlots;
 import com.gtnewhorizons.appliedbureaucratics.facility.IComputeFacility;
 import com.gtnewhorizons.appliedbureaucratics.facility.breakroom.BreakRoomBindings;
+import com.gtnewhorizons.appliedbureaucratics.gui.founder.FounderGui;
 import com.gtnewhorizons.appliedbureaucratics.integration.ae2.IComputeGrid;
 import com.gtnewhorizons.appliedbureaucratics.util.Cadence;
 import com.gtnewhorizons.appliedbureaucratics.workforce.Breaks;
@@ -49,13 +62,15 @@ import appeng.me.cluster.implementations.HostedCraftingCPUCluster;
 import appeng.me.cluster.implementations.ICraftingCPUHost;
 import appeng.me.helpers.AENetworkProxy;
 import appeng.me.helpers.IGridProxyable;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 
 /// The Requisition Tray: the ME node and the one job slot of a Desk, the HV facility. The rest of the Desk is
 /// furniture found around it ([DeskSurvey]): a seat with a worker on it, a desk next to the seat, a typewriter for
 /// planning, a bell for dispatch, and bookcases for Filing. A player sitting on the seat is the worker ("founder
 /// mode"). See Note [The compute model] and Note [Facility job slots].
 public class TileRequisitionTray extends TileEntity
-    implements IGridProxyable, ICraftingCPUHost, IComputeFacility, ISidedInventory {
+    implements IGridProxyable, ICraftingCPUHost, IComputeFacility, ISidedInventory, IGuiHolder<PosGuiData> {
 
     public static final int SLOT_PAPER = 0;
     public static final int SLOT_PAYROLL = 1;
@@ -81,6 +96,9 @@ public class TileRequisitionTray extends TileEntity
     /// The morale bonus of the worker's break room. See Note [Break rooms].
     private int breakRoom;
     private final CoffeeLog coffee = new CoffeeLog();
+    /// The founder's focus, and who sat on the seat at the last look. See Note [Founder mode].
+    private final FounderFocus focus = new FounderFocus();
+    private @Nullable UUID seatedFounder;
     private boolean party;
     /// Sheets of paper owed for planning done and not yet taken from the paper slot.
     private double sheetsOwed;
@@ -125,6 +143,7 @@ public class TileRequisitionTray extends TileEntity
     }
 
     private void recompute() {
+        this.watchFounder();
         this.slots.setFiling(this.survey.filing());
         this.paper = this.takePaper();
         this.crunch = this.crunchOverride != null ? this.crunchOverride
@@ -162,6 +181,9 @@ public class TileRequisitionTray extends TileEntity
         if (worker != null) {
             this.payroll.accrue(1, 20);
             this.payWages();
+        } else if (!this.focus.isFocused(this.worldObj.getTotalWorldTime())) {
+            this.setOff(Bottleneck.UNFOCUSED);
+            return;
         }
         final List<OrgUnit> roots = Collections.singletonList(OrgUnit.worker(1, affinity(worker)));
         final double share = this.survey.typewriter() ? this.planningShare() : 0;
@@ -351,6 +373,61 @@ public class TileRequisitionTray extends TileEntity
         return this.crunch;
     }
 
+    // Founder mode. See Note [Founder mode].
+
+    /// Opens the founder's GUI for a player who has just sat down on the seat.
+    private void watchFounder() {
+        final int[] seat = this.survey.seatAt();
+        final EntityPlayer founder = seat == null || this.survey.worker() != null ? null
+            : DeskSurvey.seatedPlayer(this.worldObj, seat[0], seat[1], seat[2]);
+        if (founder != null && !founder.getUniqueID()
+            .equals(this.seatedFounder)) {
+            this.openFounderGui(founder);
+        }
+        this.seatedFounder = founder != null ? founder.getUniqueID() : null;
+    }
+
+    /// Opens the founder's GUI for `player`, unless another GUI is open.
+    public void openFounderGui(final EntityPlayer player) {
+        if (player instanceof EntityPlayerMP && player.openContainer == player.inventoryContainer) {
+            GuiFactories.tileEntity()
+                .open(player, this);
+        }
+    }
+
+    /// Whether `player` is the founder sitting at this Desk.
+    public boolean isFounder(final EntityPlayer player) {
+        return player.getUniqueID()
+            .equals(this.seatedFounder);
+    }
+
+    /// A puzzle solved by `player`, on the server: focus for the founder, nothing for anyone else.
+    public void founderSolved(final EntityPlayer player) {
+        if (this.worldObj != null && !this.worldObj.isRemote && this.isFounder(player)) {
+            this.focus.solve(this.worldObj.getTotalWorldTime());
+            this.markDirty();
+        }
+    }
+
+    public int getTicketsClosed() {
+        return this.focus.solved();
+    }
+
+    public long getFocusTicks() {
+        return this.worldObj == null ? 0 : this.focus.remaining(this.worldObj.getTotalWorldTime());
+    }
+
+    @Override
+    public ModularPanel buildUI(final PosGuiData data, final PanelSyncManager syncManager, final UISettings settings) {
+        return FounderGui.build(this, data, syncManager);
+    }
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public ModularScreen createScreen(final PosGuiData data, final ModularPanel mainPanel) {
+        return new ModularScreen(AppliedBureaucratics.MODID, mainPanel);
+    }
+
     public int getBreakRoomBonus() {
         return this.breakRoom;
     }
@@ -467,6 +544,7 @@ public class TileRequisitionTray extends TileEntity
         super.writeToNBT(tag);
         this.proxy.writeToNBT(tag);
         tag.setDouble("coffee", this.coffee.save());
+        tag.setInteger("ticketsClosed", this.focus.solved());
         this.slots.writeToNBT(tag);
         tag.setDouble("morale", this.morale.get());
         tag.setLong("wageTicks", this.payroll.getWorkerTicks());
@@ -490,6 +568,7 @@ public class TileRequisitionTray extends TileEntity
         super.readFromNBT(tag);
         this.proxy.readFromNBT(tag);
         this.coffee.load(tag.hasKey("coffee") ? tag.getDouble("coffee") : -1);
+        this.focus.setSolved(tag.getInteger("ticketsClosed"));
         this.slots.readFromNBT(tag);
         this.morale.set(tag.hasKey("morale") ? tag.getDouble("morale") : Morale.START);
         this.payroll.load(tag.getLong("wageTicks"), tag.getLong("wagesOwed"), tag.getLong("wagesPrepaid"));

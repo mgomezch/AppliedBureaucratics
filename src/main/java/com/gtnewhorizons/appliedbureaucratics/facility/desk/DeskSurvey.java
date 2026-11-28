@@ -85,7 +85,8 @@ public record DeskSurvey(boolean seat, int @Nullable [] seatAt, @Nullable Entity
             Amenities.score(world, sx, sy, sz));
     }
 
-    private static @Nullable EntityPlayer seatedPlayer(final World world, final int x, final int y, final int z) {
+    /// The player sitting on the seat at `x, y, z`, if any: a founder. See Note [Founder mode].
+    public static @Nullable EntityPlayer seatedPlayer(final World world, final int x, final int y, final int z) {
         final List<EntityPlayer> players = world
             .getEntitiesWithinAABB(EntityPlayer.class, AxisAlignedBB.getBoundingBox(x, y, z, x + 1, y + 2, z + 1));
         for (final EntityPlayer player : players) {

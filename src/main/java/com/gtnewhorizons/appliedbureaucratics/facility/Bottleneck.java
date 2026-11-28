@@ -10,6 +10,7 @@ public enum Bottleneck {
     NO_WORKER,
     NO_KEYBOARD,
     ON_BREAK,
+    UNFOCUSED,
     NO_DESK,
     NO_TYPEWRITER,
     NO_PAPER,

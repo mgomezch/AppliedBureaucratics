@@ -7,6 +7,7 @@ import net.minecraftforge.event.entity.player.EntityInteractEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 
 import com.gtnewhorizons.appliedbureaucratics.config.ABConfig;
+import com.gtnewhorizons.appliedbureaucratics.facility.desk.TileRequisitionTray;
 import com.gtnewhorizons.appliedbureaucratics.integration.bibliocraft.Furniture;
 import com.gtnewhorizons.appliedbureaucratics.item.ModItems;
 
@@ -38,6 +39,31 @@ public final class WorkforceEvents {
         if (employment != null) {
             WorkforceActions.showCard(event.entityPlayer, target, employment);
             event.setCanceled(true);
+        }
+    }
+
+    /// A founder sitting at a Desk who right-clicks its typewriter gets the founder's GUI back. See Note [Founder
+    /// mode].
+    @SubscribeEvent
+    public void onTypewriter(final PlayerInteractEvent event) {
+        if (event.action != PlayerInteractEvent.Action.RIGHT_CLICK_BLOCK || event.world.isRemote
+            || event.entityPlayer.ridingEntity == null
+            || !Furniture.TYPEWRITER.matches(event.world.getBlock(event.x, event.y, event.z))) {
+            return;
+        }
+        final int r = 4;
+        for (int dx = -r; dx <= r; dx++) {
+            for (int dy = -2; dy <= 2; dy++) {
+                for (int dz = -r; dz <= r; dz++) {
+                    if (event.world
+                        .getTileEntity(event.x + dx, event.y + dy, event.z + dz) instanceof TileRequisitionTray tray
+                        && tray.isFounder(event.entityPlayer)) {
+                        tray.openFounderGui(event.entityPlayer);
+                        event.setCanceled(true);
+                        return;
+                    }
+                }
+            }
         }
     }
 
