@@ -26,6 +26,15 @@ public enum Furniture {
         "BiblioCraft:BiblioIronLantern"),
     POSTER("BiblioCraft:BiblioFancySign"),
     PLANT("minecraft:flower_pot"),
+    /// Kitchen fixtures, for a break room's microkitchen. See Note [Break rooms].
+    KITCHEN("cookingforblockheads:sink", "cookingforblockheads:fridge", "cookingforblockheads:cookingoven",
+        "cookingforblockheads:counter", "cookingforblockheads:countercorner", "cookingforblockheads:cabinet",
+        "cookingforblockheads:cabinetcorner", "cookingforblockheads:cookingtable", "cookingforblockheads:toaster",
+        "cookingforblockheads:toolrack", "minecraft:cauldron"),
+    /// What a Water Cooler stands under: an Iron Tanks tank with water in it. See Note [Break rooms].
+    WATER_TANK("irontank:copperTank", "irontank:ironTank", "irontank:silverTank", "irontank:goldTank",
+        "irontank:diamondTank", "irontank:obsidianTank", "irontank:emeraldTank", "irontank:stainlesssteelTank",
+        "irontank:titaniumTank", "irontank:tungstensteelTank"),
     KEYBOARD("OpenComputers:keyboard"),
     SCREEN("OpenComputers:screen1", "OpenComputers:screen2", "OpenComputers:screen3");
 

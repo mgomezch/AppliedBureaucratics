@@ -21,7 +21,7 @@ public class ContainerRequisitionTray extends Container {
     public static final int PAID = 6;
     public static final int WORKER = 7;
     public static final int BUSY = 8;
-    /// Bits: 1 crunching, 2 coffee, 4 a party.
+    /// Bits: 1 crunching, 2 a break room, 4 a party.
     public static final int FLAGS = 9;
 
     final TileRequisitionTray tray;
@@ -109,7 +109,8 @@ public class ContainerRequisitionTray extends Container {
     private void updateFlags() {
         this.values.set(
             FLAGS,
-            (this.tray.isCrunching() ? 1 : 0) | (this.tray.hasCoffee() ? 2 : 0) | (this.tray.isPartying() ? 4 : 0));
+            (this.tray.isCrunching() ? 1 : 0) | (this.tray.getBreakRoomBonus() > 0 ? 2 : 0)
+                | (this.tray.isPartying() ? 4 : 0));
     }
 
     @Override

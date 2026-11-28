@@ -2,6 +2,8 @@ package com.gtnewhorizons.appliedbureaucratics.facility;
 
 import net.minecraft.item.ItemStack;
 
+import com.gtnewhorizons.appliedbureaucratics.facility.breakroom.BreakRoomKind;
+import com.gtnewhorizons.appliedbureaucratics.facility.breakroom.MTEBreakRoom;
 import com.gtnewhorizons.appliedbureaucratics.facility.datacenter.MTEDataCenter;
 import com.gtnewhorizons.appliedbureaucratics.facility.internet.MTEInternet;
 import com.gtnewhorizons.appliedbureaucratics.facility.mainframe.MTEMainframe;
@@ -20,6 +22,9 @@ public final class ModMetaTileEntities {
     public static ItemStack internet;
     public static ItemStack dataCenter;
     public static ItemStack singularity;
+    /// By [BreakRoomKind], IDs 32210 to 32212.
+    public static final java.util.EnumMap<BreakRoomKind, ItemStack> breakRooms = new java.util.EnumMap<>(
+        BreakRoomKind.class);
 
     private ModMetaTileEntities() {}
 
@@ -28,6 +33,9 @@ public final class ModMetaTileEntities {
         internet = new MTEInternet(ID_INTERNET, "multimachine.ab.internet", "The Internet").getStackForm(1);
         singularity = new MTESingularity(ID_SINGULARITY, "multimachine.ab.singularity", "The Singularity")
             .getStackForm(1);
+        for (final BreakRoomKind kind : BreakRoomKind.values()) {
+            breakRooms.put(kind, new MTEBreakRoom(kind).getStackForm(1));
+        }
         dataCenter = new MTEDataCenter(ID_DATA_CENTER, "multimachine.ab.datacenter", "AI Data Center").getStackForm(1);
     }
 }

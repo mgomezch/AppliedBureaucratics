@@ -3,7 +3,6 @@ package com.gtnewhorizons.appliedbureaucratics.workforce;
 import java.util.List;
 import java.util.UUID;
 
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.passive.EntityVillager;
@@ -131,7 +130,7 @@ public final class WorkforceActions {
             worker.mountEntity(null);
         }
         final EntityWorkstationMount mount = existing != null ? existing
-            : new EntityWorkstationMount(world, x, y, z, facing(world, x, y, z, player));
+            : new EntityWorkstationMount(world, x, y, z, facing(world, x, y, z, player.rotationYaw));
         if (existing == null) {
             world.spawnEntityInWorld(mount);
         }
@@ -165,10 +164,30 @@ public final class WorkforceActions {
         return null;
     }
 
-    /// The yaw that faces the seat's workstation, or the way the player looks if it has none.
+    /// Seats `worker` on the seat at `x, y, z` again, as after a break: unless the seat is gone or someone else
+    /// sits there, in which case it stays standing, off shift, until it is assigned again.
+    public static boolean sit(final World world, final EntityLivingBase worker, final int x, final int y, final int z,
+        final float yaw) {
+        if (!Furniture.SEAT.matches(world.getBlock(x, y, z))) {
+            return false;
+        }
+        final EntityWorkstationMount existing = mountAt(world, x, y, z);
+        if (existing != null && existing.riddenByEntity != null && existing.riddenByEntity != worker) {
+            return false;
+        }
+        final EntityWorkstationMount mount = existing != null ? existing
+            : new EntityWorkstationMount(world, x, y, z, facing(world, x, y, z, yaw));
+        if (existing == null) {
+            world.spawnEntityInWorld(mount);
+        }
+        worker.mountEntity(mount);
+        return true;
+    }
+
+    /// The yaw that faces the seat's workstation, or `fallback` if it has none.
     /// See Note [Facing the workstation].
-    private static float facing(final World world, final int x, final int y, final int z, final Entity player) {
+    private static float facing(final World world, final int x, final int y, final int z, final float fallback) {
         final Float facing = Workplace.facing(world, x, y, z);
-        return facing != null ? facing : player.rotationYaw;
+        return facing != null ? facing : fallback;
     }
 }

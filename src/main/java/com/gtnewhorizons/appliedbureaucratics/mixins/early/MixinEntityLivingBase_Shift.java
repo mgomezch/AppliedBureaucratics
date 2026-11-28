@@ -1,6 +1,7 @@
 package com.gtnewhorizons.appliedbureaucratics.mixins.early;
 
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
@@ -14,6 +15,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import com.gtnewhorizons.appliedbureaucratics.workforce.Breaks;
 import com.gtnewhorizons.appliedbureaucratics.workforce.Employment;
 import com.gtnewhorizons.appliedbureaucratics.workforce.IEmployable;
 
@@ -61,7 +63,12 @@ public abstract class MixinEntityLivingBase_Shift extends Entity implements IEmp
         method = "onLivingUpdate",
         at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/EntityLivingBase;updateAITasks()V"))
     private void ab$updateAITasks(EntityLivingBase self) {
-        if (!Employment.isOnShift(self)) {
+        if (Employment.isOnBreak(self)) {
+            // See Note [Break rooms].
+            if (self instanceof EntityLiving living) {
+                Breaks.drive(living);
+            }
+        } else if (!Employment.isOnShift(self)) {
             this.updateAITasks();
         }
     }
@@ -70,7 +77,7 @@ public abstract class MixinEntityLivingBase_Shift extends Entity implements IEmp
         method = "onLivingUpdate",
         at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/EntityLivingBase;updateEntityActionState()V"))
     private void ab$updateEntityActionState(EntityLivingBase self) {
-        if (!Employment.isOnShift(self)) {
+        if (!Employment.isAtWork(self)) {
             this.updateEntityActionState();
         }
     }

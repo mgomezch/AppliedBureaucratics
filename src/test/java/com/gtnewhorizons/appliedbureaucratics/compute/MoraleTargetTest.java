@@ -8,24 +8,25 @@ import org.junit.jupiter.api.Test;
 /// The morale table of the design document, section 7.3.
 class MoraleTargetTest {
 
-    private static double target(boolean paid, int amenities, boolean coffee, boolean party, boolean crowded,
+    private static double target(boolean paid, int amenities, int breakRoom, boolean party, boolean crowded,
         int pollution, int managers, boolean crunch) {
-        return new MoraleTarget(paid, amenities, coffee, party, crowded, pollution, managers, crunch).value();
+        return new MoraleTarget(paid, amenities, breakRoom, party, crowded, pollution, managers, crunch).value();
     }
 
     @Test
     void theTable() {
         assertAll(
-            () -> assertEquals(60, target(true, 0, false, false, false, 0, 0, false), "Base and paid"),
-            () -> assertEquals(10, target(false, 0, false, false, false, 0, 0, false), "Unpaid"),
-            () -> assertEquals(100, target(true, 40, true, false, false, 0, 0, false), "Amenities and coffee"),
-            () -> assertEquals(100, target(true, 99, false, false, false, 0, 0, false), "Amenities are capped at 40"),
-            () -> assertEquals(80, target(true, 0, false, true, false, 0, 0, false), "A pizza party"),
-            () -> assertEquals(50, target(true, 0, false, false, true, 0, 0, false), "Crowding"),
-            () -> assertEquals(40, target(true, 0, false, false, false, 20, 0, false), "Smog"),
-            () -> assertEquals(50, target(true, 0, false, false, false, 0, 10, false), "A demon manager"),
-            () -> assertEquals(30, target(true, 0, false, false, false, 0, 0, true), "Crunch"),
-            () -> assertEquals(0, target(false, 0, false, false, true, 20, 10, true), "Never below 0"));
+            () -> assertEquals(60, target(true, 0, 0, false, false, 0, 0, false), "Base and paid"),
+            () -> assertEquals(10, target(false, 0, 0, false, false, 0, 0, false), "Unpaid"),
+            () -> assertEquals(100, target(true, 40, 10, false, false, 0, 0, false), "Amenities and a coffee machine"),
+            () -> assertEquals(100, target(true, 99, 0, false, false, 0, 0, false), "Amenities are capped at 40"),
+            () -> assertEquals(80, target(true, 0, 0, true, false, 0, 0, false), "A pizza party"),
+            () -> assertEquals(50, target(true, 0, 0, false, true, 0, 0, false), "Crowding"),
+            () -> assertEquals(40, target(true, 0, 0, false, false, 20, 0, false), "Smog"),
+            () -> assertEquals(50, target(true, 0, 0, false, false, 0, 10, false), "A demon manager"),
+            () -> assertEquals(30, target(true, 0, 0, false, false, 0, 0, true), "Crunch"),
+            () -> assertEquals(0, target(false, 0, 0, false, true, 20, 10, true), "Never below 0"),
+            () -> assertEquals(100, target(true, 0, 99, false, false, 0, 0, false), "Break rooms are capped at 40"));
     }
 
     @Test

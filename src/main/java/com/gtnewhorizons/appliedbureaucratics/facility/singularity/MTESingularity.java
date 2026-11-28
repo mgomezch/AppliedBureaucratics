@@ -420,7 +420,7 @@ public class MTESingularity extends MTEComputeFacility<MTESingularity> implement
                     this.y() + 4,
                     this.z() + 5))) {
             final EntityVillager villager = (EntityVillager) o;
-            if (Employment.of(villager) != null && !Employment.isOnShift(villager)) {
+            if (Employment.of(villager) != null && !Employment.isAtWork(villager)) {
                 final NBTTagCompound tag = new NBTTagCompound();
                 if (villager.writeToNBTOptional(tag)) {
                     this.studied = tag;

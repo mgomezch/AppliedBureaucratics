@@ -5,23 +5,25 @@ package com.gtnewhorizons.appliedbureaucratics.compute;
 ///
 /// @param paid whether wages are paid; true for a facility with no wages to pay
 /// @param amenities the amenity bonus around the seats, averaged; capped at [#AMENITY_CAP]
-/// @param coffee a stocked Break Room Counter within reach
+/// @param breakRoom the break rooms' bonus to the workers, averaged; capped at [#BREAK_ROOM_CAP]. See Note [Break
+/// rooms].
 /// @param party a pizza party in the last day
 /// @param crowded more than one seat per 4 m² around the seats
 /// @param pollution the chunk's pollution penalty, 0 to 20
 /// @param managers the managers' morale penalties, as a positive number
 /// @param crunch the facility is crunching
-public record MoraleTarget(boolean paid, int amenities, boolean coffee, boolean party, boolean crowded, int pollution,
+public record MoraleTarget(boolean paid, int amenities, int breakRoom, boolean party, boolean crowded, int pollution,
     int managers, boolean crunch) {
 
     public static final int BASE = 50;
     public static final int AMENITY_CAP = 40;
+    public static final int BREAK_ROOM_CAP = 40;
 
     public double value() {
         double target = BASE;
         target += this.paid ? 10 : -40;
         target += Math.min(AMENITY_CAP, Math.max(0, this.amenities));
-        target += this.coffee ? 10 : 0;
+        target += Math.min(BREAK_ROOM_CAP, Math.max(0, this.breakRoom));
         target += this.party ? 20 : 0;
         target -= this.crowded ? 10 : 0;
         target -= Math.max(0, Math.min(20, this.pollution));

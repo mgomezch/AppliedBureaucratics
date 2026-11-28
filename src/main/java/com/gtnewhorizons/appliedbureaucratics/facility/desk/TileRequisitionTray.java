@@ -3,7 +3,6 @@ package com.gtnewhorizons.appliedbureaucratics.facility.desk;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.passive.EntityVillager;
 import net.minecraft.entity.player.EntityPlayer;
@@ -19,6 +18,7 @@ import net.minecraftforge.common.util.ForgeDirection;
 import org.jspecify.annotations.Nullable;
 
 import com.gtnewhorizons.appliedbureaucratics.compute.Affinity;
+import com.gtnewhorizons.appliedbureaucratics.compute.CoffeeLog;
 import com.gtnewhorizons.appliedbureaucratics.compute.ComputeSettings;
 import com.gtnewhorizons.appliedbureaucratics.compute.FacilityOutput;
 import com.gtnewhorizons.appliedbureaucratics.compute.Morale;
@@ -32,10 +32,12 @@ import com.gtnewhorizons.appliedbureaucratics.facility.Amenities;
 import com.gtnewhorizons.appliedbureaucratics.facility.Bottleneck;
 import com.gtnewhorizons.appliedbureaucratics.facility.FacilitySlots;
 import com.gtnewhorizons.appliedbureaucratics.facility.IComputeFacility;
-import com.gtnewhorizons.appliedbureaucratics.facility.breakroom.TileBreakRoomCounter;
+import com.gtnewhorizons.appliedbureaucratics.facility.breakroom.BreakRoomBindings;
 import com.gtnewhorizons.appliedbureaucratics.integration.ae2.IComputeGrid;
 import com.gtnewhorizons.appliedbureaucratics.util.Cadence;
+import com.gtnewhorizons.appliedbureaucratics.workforce.Breaks;
 import com.gtnewhorizons.appliedbureaucratics.workforce.Employment;
+import com.gtnewhorizons.appliedbureaucratics.workforce.Shift;
 
 import appeng.api.networking.GridFlags;
 import appeng.api.networking.IGrid;
@@ -76,7 +78,9 @@ public class TileRequisitionTray extends TileEntity
     private boolean crunch;
     private Double pinnedShare;
     private Boolean crunchOverride;
-    private boolean coffee;
+    /// The morale bonus of the worker's break room. See Note [Break rooms].
+    private int breakRoom;
+    private final CoffeeLog coffee = new CoffeeLog();
     private boolean party;
     /// Sheets of paper owed for planning done and not yet taken from the paper slot.
     private double sheetsOwed;
@@ -125,11 +129,16 @@ public class TileRequisitionTray extends TileEntity
         this.paper = this.takePaper();
         this.crunch = this.crunchOverride != null ? this.crunchOverride
             : this.worldObj.isBlockIndirectlyGettingPowered(this.xCoord, this.yCoord, this.zCoord);
-        final TileBreakRoomCounter counter = TileBreakRoomCounter
-            .near(this.worldObj, this.xCoord, this.yCoord, this.zCoord);
-        final int staff = this.survey.hasWorker() ? 1 : 0;
-        this.coffee = counter != null && counter.serveCoffee(staff, 20);
-        this.party = counter != null && staff > 0 && counter.party();
+        // The worker's break room. While the worker is away on a break, its last one stands. See Note [Break rooms].
+        if (this.survey.worker() != null) {
+            BreakRoomBindings.collectCups(this.survey.worker(), this.coffee);
+            final Shift.Binding room = BreakRoomBindings.valid(this.survey.worker());
+            this.breakRoom = BreakRoomBindings.bonus(room, this.coffee);
+            this.party = room != null && room.party();
+        } else if (this.survey.founder() != null || !this.survey.seat()) {
+            this.breakRoom = 0;
+            this.party = false;
+        }
         if (!this.isPowered()) {
             this.setOff(Bottleneck.NO_POWER);
             return;
@@ -139,7 +148,10 @@ public class TileRequisitionTray extends TileEntity
             return;
         }
         if (!this.survey.hasWorker()) {
-            this.setOff(Bottleneck.NO_WORKER);
+            final int[] seat = this.survey.seatAt();
+            this.setOff(
+                seat != null && Breaks.isAway(this.worldObj, seat[0], seat[1], seat[2]) ? Bottleneck.ON_BREAK
+                    : Bottleneck.NO_WORKER);
             return;
         }
         if (!this.survey.desk()) {
@@ -221,7 +233,7 @@ public class TileRequisitionTray extends TileEntity
         return new MoraleTarget(
             this.isPaid(),
             this.survey.amenities(),
-            this.coffee,
+            this.breakRoom,
             this.party,
             crowded,
             Amenities.smog(this.worldObj, this.xCoord, this.zCoord),
@@ -331,7 +343,7 @@ public class TileRequisitionTray extends TileEntity
                 this.survey.worker() != null ? "employee" : this.survey.founder() != null ? "founder" : "none",
                 this.slots.getBusyCount(),
                 this.crunch ? ", crunch" : "",
-                this.coffee ? ", coffee" : "",
+                this.breakRoom > 0 ? ", break room +" + this.breakRoom : "",
                 this.party ? ", party" : ""));
     }
 
@@ -339,8 +351,8 @@ public class TileRequisitionTray extends TileEntity
         return this.crunch;
     }
 
-    public boolean hasCoffee() {
-        return this.coffee;
+    public int getBreakRoomBonus() {
+        return this.breakRoom;
     }
 
     public boolean isPartying() {
@@ -454,6 +466,7 @@ public class TileRequisitionTray extends TileEntity
     public void writeToNBT(final NBTTagCompound tag) {
         super.writeToNBT(tag);
         this.proxy.writeToNBT(tag);
+        tag.setDouble("coffee", this.coffee.save());
         this.slots.writeToNBT(tag);
         tag.setDouble("morale", this.morale.get());
         tag.setLong("wageTicks", this.payroll.getWorkerTicks());
@@ -476,6 +489,7 @@ public class TileRequisitionTray extends TileEntity
     public void readFromNBT(final NBTTagCompound tag) {
         super.readFromNBT(tag);
         this.proxy.readFromNBT(tag);
+        this.coffee.load(tag.hasKey("coffee") ? tag.getDouble("coffee") : -1);
         this.slots.readFromNBT(tag);
         this.morale.set(tag.hasKey("morale") ? tag.getDouble("morale") : Morale.START);
         this.payroll.load(tag.getLong("wageTicks"), tag.getLong("wagesOwed"), tag.getLong("wagesPrepaid"));

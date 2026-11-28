@@ -1,8 +1,6 @@
 itemGroup.appliedbureaucratics=Applied Bureaucratics
 
 tile.appliedbureaucratics.requisition_tray.name=Requisition Tray
-tile.appliedbureaucratics.break_room_counter.name=Break Room Counter
-tile.appliedbureaucratics.break_room_counter.tooltip=In lieu of a raise.\nCoffee within 16 blocks: morale +10. Cake or pizza: a party, +20 for a day.
 tile.appliedbureaucratics.requisition_tray.tooltip=Sole proprietorship. You are the IT department.\nPlace on ME cable, with a BiblioCraft seat, desk and typewriter nearby.
 
 item.appliedbureaucratics.employment_contract.name=Employment Contract
@@ -45,6 +43,8 @@ ab.bottleneck.no_worker=Limited by: nobody on the seat.
 ab.bottleneck.no_worker.quip=The position remains open.
 ab.bottleneck.no_keyboard=Limited by: no keyboard in front of the screens.
 ab.bottleneck.no_keyboard.quip=They have been staring at it for hours.
+ab.bottleneck.on_break=Limited by: on a break.
+ab.bottleneck.on_break.quip=Back in five.
 ab.bottleneck.no_desk=Limited by: no desk next to the seat.
 ab.bottleneck.no_desk.quip=Hot-desking has gone too far.
 ab.bottleneck.no_typewriter=Limited by: no typewriter (no planning).
@@ -78,10 +78,9 @@ ab.gui.morale=Morale: %s
 ab.gui.paper=< Paper
 ab.gui.paid=Wages: paid  >
 ab.gui.unpaid=Wages: UNPAID  >
-ab.gui.breakroom=Coffee keeps them going. Cake keeps them quiet.
 ab.gui.crunch=CRUNCH (redstone)
-ab.gui.coffee=Coffee
 ab.gui.party=Pizza party!
+ab.gui.breakroomperk=Break room
 
 tile.appliedbureaucratics.terminal_concentrator.name=Terminal Concentrator
 tile.appliedbureaucratics.terminal_concentrator.tooltip=Part of a Mainframe's back face. OC screens on its network, each with a keyboard in front, are the office's terminals.
@@ -124,3 +123,29 @@ ab.singularity.wants.ITEM=%s
 ab.singularity.granted=§5The Singularity is pleased.§r
 ab.singularity.ignored=§5The Singularity noticed.§r It will remember.
 ab.singularity.returned=§5The Singularity returns your employee,§r calm, with glowing eyes.
+
+# Break rooms. See Note [Break rooms].
+ab.breakroom.water_cooler.desc=In lieu of a raise. Did you see the game last night?
+ab.breakroom.coffee_machine.desc=Don't talk to them before their coffee.
+ab.breakroom.snack_machine.desc=Exact change only. Takes the edge off the 4 pm slump.
+ab.breakroom.water_cooler.supplies=Stands under an Iron Tanks tank of water: 250 mL a visit, morale +5
+ab.breakroom.coffee_machine.supplies=A coffee bean a cup; sugar, cocoa powder and milk (or soy milk) in it if it has them. Each makes the coffee's morale bonus 2 more than black coffee's 4
+ab.breakroom.snack_machine.supplies=Sells sandwiches, one a visit: morale +4, and +2 per kind in stock, up to 6 kinds
+ab.breakroom.serves=Serves the workers seated in the %s x %s chunks around it, within %s blocks up or down
+ab.breakroom.kitchen=Up to +%s more morale for a microkitchen around it: kitchen fixtures and plants
+ab.breakroom.power=Uses %s EU a visit
+ab.breakroom.nopower=Needs no power
+ab.breakroom.party=Cake or pizza in it throws a pizza party: morale +20 for a day
+ab.breakroom.status.open=Open.
+ab.breakroom.status.disabled=Closed: switched off.
+ab.breakroom.status.no_power=Closed: no power.
+ab.breakroom.status.no_tank=Closed: no water tank on top.
+ab.breakroom.status.no_water=Closed: the tank is dry.
+ab.breakroom.status.no_beans=Closed: no coffee beans.
+ab.breakroom.status.no_sandwiches=Closed: sold out.
+ab.breakroom.gui.workers=Workers: %s, visits: %s
+ab.breakroom.gui.kitchen=Kitchen: %3$s/%4$s
+ab.breakroom.gui.water_cooler=Water: morale +%s
+ab.breakroom.gui.coffee_machine=Coffee: house blend
+ab.breakroom.gui.snack_machine=Sandwiches: morale +%s
+ab.breakroom.gui.party=, pizza party!

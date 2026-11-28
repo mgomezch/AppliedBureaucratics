@@ -3,6 +3,7 @@ package com.gtnewhorizons.appliedbureaucratics.workforce;
 import java.util.concurrent.ThreadLocalRandom;
 
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
@@ -95,6 +96,13 @@ public class EntityWorkstationMount extends Entity {
         if (this.riddenByEntity == null && this.ticksExisted > 20) {
             this.setDead();
             return;
+        }
+        // See Note [Break rooms].
+        if (this.riddenByEntity instanceof EntityLiving worker) {
+            final Employment employment = Employment.of(worker);
+            if (employment != null) {
+                Breaks.whileSeated(this, worker, employment);
+            }
         }
         if (this.riddenByEntity instanceof EntityLivingBase rider && --this.untilNoise <= 0) {
             this.untilNoise = nextNoise();

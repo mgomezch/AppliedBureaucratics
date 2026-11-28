@@ -58,7 +58,7 @@ public class GuiRequisitionTray extends GuiContainer {
                 .append("  ");
         }
         if ((flags & 2) != 0) {
-            perks.append(StatCollector.translateToLocal("ab.gui.coffee"))
+            perks.append(StatCollector.translateToLocal("ab.gui.breakroomperk"))
                 .append("  ");
         }
         if ((flags & 4) != 0) {

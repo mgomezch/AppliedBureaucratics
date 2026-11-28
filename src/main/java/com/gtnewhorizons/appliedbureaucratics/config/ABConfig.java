@@ -61,8 +61,16 @@ public final class ABConfig {
     public static double singularityPlanningRate = 400;
 
     // The break room.
-    public static double breakRoomRange = 16;
-    public static int coffeeWorkerDays = 4;
+    /// See Note [Break rooms].
+    public static double breakMinutes = 5;
+    public static double breakSeconds = 30;
+    public static double managedBreakMinutes = 7;
+    public static double managedBreakSeconds = 20;
+    public static double breakQualityStretch = 0.25;
+    public static int breakRoomScanTicks = 2400;
+    public static int breakRoomVerticalReach = 4;
+    public static int breakRoomMaxDistance = 48;
+    public static int breakRoomWander = 6;
 
     private ABConfig() {}
 
@@ -172,10 +180,34 @@ public final class ABConfig {
                 singularityPlanningRate,
                 "Planning steps a second while it sulks below Alignment 25.")
             .getDouble();
-        breakRoomRange = c.get("breakroom", "range", breakRoomRange, "How far a Break Room Counter serves.")
+        breakMinutes = c.get("breakroom", "breakMinutes", breakMinutes, "Minutes between an unmanaged worker's breaks.")
             .getDouble();
-        coffeeWorkerDays = c
-            .get("breakroom", "coffeeWorkerDays", coffeeWorkerDays, "Worker-days one cup of coffee lasts.")
+        breakSeconds = c.get("breakroom", "breakSeconds", breakSeconds, "Seconds an unmanaged worker's break lasts.")
+            .getDouble();
+        managedBreakMinutes = c
+            .get("breakroom", "managedBreakMinutes", managedBreakMinutes, "Minutes between a managed worker's breaks.")
+            .getDouble();
+        managedBreakSeconds = c
+            .get("breakroom", "managedBreakSeconds", managedBreakSeconds, "Seconds a managed worker's break lasts.")
+            .getDouble();
+        breakQualityStretch = c
+            .get(
+                "breakroom",
+                "breakQualityStretch",
+                breakQualityStretch,
+                "How much more often and longer unmanaged workers take breaks at the best kitchen.")
+            .getDouble();
+        breakRoomScanTicks = c
+            .get("breakroom", "scanTicks", breakRoomScanTicks, "Ticks between a break room's looks for workers.")
+            .getInt();
+        breakRoomVerticalReach = c
+            .get("breakroom", "verticalReach", breakRoomVerticalReach, "Blocks up or down a break room serves.")
+            .getInt();
+        breakRoomMaxDistance = c
+            .get("breakroom", "maxDistance", breakRoomMaxDistance, "Most blocks across from a seat to its break room.")
+            .getInt();
+        breakRoomWander = c
+            .get("breakroom", "wander", breakRoomWander, "Blocks from the break room a worker on a break wanders.")
             .getInt();
         for (final ItemList list : ItemList.values()) {
             list.configure(

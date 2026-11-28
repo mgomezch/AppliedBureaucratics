@@ -11,14 +11,19 @@ import net.minecraft.item.ItemStack;
 import cpw.mods.fml.common.registry.GameData;
 
 /// A configured list of items, as registry names with an optional `:meta`, resolved once at load so matching is a
-/// map lookup.
+/// map lookup. A name with a `*` in it is a pattern, matched against every item's registry name, ignoring case.
 ///
 /// Items are kept by identity, not by numeric ID: a world remaps mods' item IDs to its own when it loads, so an ID
-/// taken at load would stop matching: Pam's items, say, in a world whose ID map differs from the game's.
+/// taken at load would stop matching, as Pam's coffee beans once did in a test world.
 public enum ItemList {
 
-    COFFEE("harvestcraft:coffeeItem", "harvestcraft:coffeeconlecheItem", "harvestcraft:espressoItem",
-        "minecraft:dye:3"),
+    /// A Coffee Machine's: beans, which every cup needs, and what may go in it. See Note [Break rooms].
+    COFFEE_BEANS("harvestcraft:coffeebeanItem"),
+    SUGAR("minecraft:sugar"),
+    COCOA_POWDER("harvestcraft:cocoapowderItem"),
+    SOY_MILK("harvestcraft:soymilkItem"),
+    /// What a Snack Vending Machine sells.
+    SANDWICHES("harvestcraft:*sandwich*", "harvestcraft:bltItem", "harvestcraft:grilledcheeseItem"),
     PARTY_FOOD("harvestcraft:pizzaItem", "minecraft:cake", "minecraft:pumpkin_pie"),
     PAPER("minecraft:paper"),
     BOOK("minecraft:book", "minecraft:writable_book", "minecraft:written_book", "minecraft:enchanted_book");
@@ -55,6 +60,23 @@ public enum ItemList {
         for (final ItemList list : values()) {
             final Map<Item, Set<Integer>> keys = new IdentityHashMap<>();
             for (final String spec : list.names) {
+                if (spec.contains("*")) {
+                    final java.util.regex.Pattern pattern = java.util.regex.Pattern.compile(
+                        "\\Q" + spec.replace("*", "\\E.*\\Q") + "\\E",
+                        java.util.regex.Pattern.CASE_INSENSITIVE);
+                    for (final Object name : GameData.getItemRegistry()
+                        .getKeys()) {
+                        if (pattern.matcher((String) name)
+                            .matches()) {
+                            add(
+                                keys,
+                                (Item) GameData.getItemRegistry()
+                                    .getObject((String) name),
+                                ANY);
+                        }
+                    }
+                    continue;
+                }
                 final String[] parts = spec.split(":");
                 final String name = parts.length >= 2 ? parts[0] + ":" + parts[1] : spec;
                 int meta = ANY;

@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Set;
 
 import net.minecraft.block.Block;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -29,6 +30,7 @@ import com.gtnewhorizon.structurelib.structure.StructureUtility;
 import com.gtnewhorizons.appliedbureaucratics.block.ABTextures;
 import com.gtnewhorizons.appliedbureaucratics.block.BlockABCasing.Casing;
 import com.gtnewhorizons.appliedbureaucratics.block.ModBlocks;
+import com.gtnewhorizons.appliedbureaucratics.compute.CoffeeLog;
 import com.gtnewhorizons.appliedbureaucratics.compute.ComputeSettings;
 import com.gtnewhorizons.appliedbureaucratics.compute.FacilityOutput;
 import com.gtnewhorizons.appliedbureaucratics.compute.Morale;
@@ -44,12 +46,14 @@ import com.gtnewhorizons.appliedbureaucratics.facility.Bottleneck;
 import com.gtnewhorizons.appliedbureaucratics.facility.MTEComputeFacility;
 import com.gtnewhorizons.appliedbureaucratics.facility.ManagerUpkeep;
 import com.gtnewhorizons.appliedbureaucratics.facility.Workstations;
-import com.gtnewhorizons.appliedbureaucratics.facility.breakroom.TileBreakRoomCounter;
+import com.gtnewhorizons.appliedbureaucratics.facility.breakroom.BreakRoomBindings;
 import com.gtnewhorizons.appliedbureaucratics.facility.internet.MTEInternet;
 import com.gtnewhorizons.appliedbureaucratics.item.ItemComponent;
 import com.gtnewhorizons.appliedbureaucratics.util.Cadence;
+import com.gtnewhorizons.appliedbureaucratics.workforce.Breaks;
 import com.gtnewhorizons.appliedbureaucratics.workforce.Employment;
 import com.gtnewhorizons.appliedbureaucratics.workforce.ManagerKind;
+import com.gtnewhorizons.appliedbureaucratics.workforce.Shift;
 import com.gtnewhorizons.appliedbureaucratics.workforce.Workplace;
 
 import appeng.me.cluster.implementations.HostedCraftingCPUCluster;
@@ -136,7 +140,11 @@ public class MTEMainframe extends MTEComputeFacility<MTEMainframe> implements IS
     private boolean paper;
     private double sheetsOwed;
     private long opsSinceLog;
-    private boolean coffee;
+    /// The average morale bonus of the workers' break rooms, and how many workers are away on a break. See Note
+    /// [Break rooms].
+    private int breakRoom;
+    private int away;
+    private final CoffeeLog coffee = new CoffeeLog();
     private boolean party;
     private FacilityOutput output = FacilityOutput.OFF;
     private Bottleneck bottleneck = Bottleneck.NO_STRUCTURE;
@@ -409,6 +417,10 @@ public class MTEMainframe extends MTEComputeFacility<MTEMainframe> implements IS
         final List<OrgChart.Worker> staff = new ArrayList<>();
         final Set<Workstations.Seated> counted = new HashSet<>();
         final Set<Workstations.Seated> keyboardless = new HashSet<>();
+        final List<EntityLivingBase> atWork = new ArrayList<>();
+        int breakRoomSum = 0;
+        boolean partying = false;
+        int away = 0;
         int amenitySum = 0;
         int crowdedSeats = 0;
         boolean hasButcher = false;
@@ -439,6 +451,11 @@ public class MTEMainframe extends MTEComputeFacility<MTEMainframe> implements IS
                 continue;
             }
             counted.add(best);
+            atWork.add(best.mob());
+            BreakRoomBindings.collectCups(best.mob(), this.coffee);
+            final Shift.Binding room = BreakRoomBindings.valid(best.mob());
+            breakRoomSum += BreakRoomBindings.bonus(room, this.coffee);
+            partying |= room != null && room.party();
             final double fte = switch (screen.tier()) {
                 case 2 -> 1.25;
                 case 3 -> 1.5;
@@ -496,6 +513,29 @@ public class MTEMainframe extends MTEComputeFacility<MTEMainframe> implements IS
         }
         this.org = new OrgChart.Result(roots, chart.leads(), chart.directors(), chart.executives(), chart.unmanaged());
         this.terminals = screens.size();
+        for (final TileTerminalConcentrator.Terminal screen : screens) {
+            away += Breaks.awayNear(world, screen.x() + 0.5, screen.y() + 0.5, screen.z() + 0.5, 2.5);
+        }
+        this.away = Math.min(away, screens.size());
+        // While everyone is away on a break, the last break rooms stand. See Note [Break rooms].
+        if (!staff.isEmpty()) {
+            this.breakRoom = breakRoomSum / staff.size();
+            this.party = partying;
+        }
+        // A paid manager keeps its workers' breaks short. See Note [Break rooms].
+        boolean managed = false;
+        for (final OrgChart.Manager manager : this.managers) {
+            managed |= manager.paid();
+        }
+        if (managed) {
+            final long until = world.getTotalWorldTime() + 2L * Cadence.LARGE;
+            for (final EntityLivingBase mob : atWork) {
+                final Employment employment = Employment.of(mob);
+                if (employment != null) {
+                    employment.shift().managedUntil = until;
+                }
+            }
+        }
         keyboardless.removeAll(counted);
         this.withoutKeyboard = keyboardless.size();
         this.workers = staff.size();
@@ -524,10 +564,6 @@ public class MTEMainframe extends MTEComputeFacility<MTEMainframe> implements IS
             this.takePaper();
         }
         this.slots.setFiling(this.filing);
-        final TileBreakRoomCounter counter = world == null ? null
-            : TileBreakRoomCounter.near(world, tile.getXCoord(), tile.getYCoord(), tile.getZCoord());
-        this.coffee = counter != null && counter.serveCoffee(this.workers, 20);
-        this.party = counter != null && this.workers > 0 && counter.party();
         if (this.concentrator != null) {
             this.concentrator.setPowered(this.isRunning());
         }
@@ -541,7 +577,9 @@ public class MTEMainframe extends MTEComputeFacility<MTEMainframe> implements IS
             return;
         }
         if (this.workers == 0) {
-            this.setOff(this.withoutKeyboard > 0 ? Bottleneck.NO_KEYBOARD : Bottleneck.NO_WORKER);
+            this.setOff(
+                this.withoutKeyboard > 0 ? Bottleneck.NO_KEYBOARD
+                    : this.away > 0 ? Bottleneck.ON_BREAK : Bottleneck.NO_WORKER);
             this.showScreens();
             return;
         }
@@ -581,7 +619,7 @@ public class MTEMainframe extends MTEComputeFacility<MTEMainframe> implements IS
         return new MoraleTarget(
             this.payroll.isPaid(),
             this.amenities,
-            this.coffee,
+            this.breakRoom,
             this.party,
             this.crowded,
             Amenities.smog(
@@ -692,7 +730,7 @@ public class MTEMainframe extends MTEComputeFacility<MTEMainframe> implements IS
         lines.add(
             String.format(
                 java.util.Locale.ROOT,
-                "  office: %d terminals, %d workers, %d leads, %d directors, %d unmanaged, hardware %.0f FTE, fte %.2f, racks %d servers %d, robots %d botnet x%.3f",
+                "  office: %d terminals, %d workers, %d leads, %d directors, %d unmanaged, hardware %.0f FTE, fte %.2f, racks %d servers %d, robots %d botnet x%.3f, break room +%d, %d on break",
                 this.terminals,
                 this.workers,
                 this.org.leads(),
@@ -703,7 +741,9 @@ public class MTEMainframe extends MTEComputeFacility<MTEMainframe> implements IS
                 this.racks.size(),
                 this.servers,
                 this.robots,
-                this.botnetFactor));
+                this.botnetFactor,
+                this.breakRoom,
+                this.away));
         return lines;
     }
 
@@ -742,6 +782,7 @@ public class MTEMainframe extends MTEComputeFacility<MTEMainframe> implements IS
         tag.setDouble("sheetsOwed", this.sheetsOwed);
         tag.setLong("opsSinceLog", this.opsSinceLog);
         this.upkeep.writeToNBT(tag);
+        tag.setDouble("coffee", this.coffee.save());
     }
 
     @Override
@@ -752,5 +793,6 @@ public class MTEMainframe extends MTEComputeFacility<MTEMainframe> implements IS
         this.sheetsOwed = tag.getDouble("sheetsOwed");
         this.opsSinceLog = tag.getLong("opsSinceLog");
         this.upkeep.readFromNBT(tag);
+        this.coffee.load(tag.hasKey("coffee") ? tag.getDouble("coffee") : -1);
     }
 }

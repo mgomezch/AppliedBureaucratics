@@ -78,16 +78,25 @@ public class CommandAB extends CommandBase {
             throw new WrongUsageException(this.getCommandUsage(sender));
         }
         switch (args[0].toLowerCase(Locale.ROOT)) {
-            case "status" -> this.status(
-                sender,
-                args.length >= 4
-                    ? nearest(
-                        sender.getEntityWorld(),
-                        new ChunkCoordinates(
-                            parseInt(sender, args[1]),
-                            parseInt(sender, args[2]),
-                            parseInt(sender, args[3])))
-                    : nearest(sender));
+            case "status" -> {
+                if (args.length >= 4 && this.breakRoomStatus(
+                    sender,
+                    parseInt(sender, args[1]),
+                    parseInt(sender, args[2]),
+                    parseInt(sender, args[3]))) {
+                    return;
+                }
+                this.status(
+                    sender,
+                    args.length >= 4
+                        ? nearest(
+                            sender.getEntityWorld(),
+                            new ChunkCoordinates(
+                                parseInt(sender, args[1]),
+                                parseInt(sender, args[2]),
+                                parseInt(sender, args[3])))
+                        : nearest(sender));
+            }
             case "craft" -> this.craft(sender, Arrays.copyOfRange(args, 1, args.length));
             case "legacy" -> this.legacy(sender);
             case "debug" -> {
@@ -149,6 +158,44 @@ public class CommandAB extends CommandBase {
         final IGridNode node = found.host()
             .getActionableNode();
         return node != null ? node.getGrid() : null;
+    }
+
+    /// `/ab status x y z` on a break room machine. See Note [Break rooms].
+    private boolean breakRoomStatus(final ICommandSender sender, final int x, final int y, final int z) {
+        if (!(sender.getEntityWorld()
+            .getTileEntity(x, y, z) instanceof gregtech.api.interfaces.tileentity.IGregTechTileEntity tile)
+            || !(tile
+                .getMetaTileEntity() instanceof com.gtnewhorizons.appliedbureaucratics.facility.breakroom.MTEBreakRoom room)) {
+            return false;
+        }
+        say(
+            sender,
+            String.format(
+                Locale.ROOT,
+                "%s at %d %d %d: %s",
+                room.getKind().regionalName,
+                x,
+                y,
+                z,
+                net.minecraft.util.StatCollector.translateToLocal(
+                    room.getStatus()
+                        .key())));
+        say(
+            sender,
+            String.format(
+                Locale.ROOT,
+                "  serving %d workers, %d visits, kitchen %d fixtures %d plants %d points, stock bonus %d%s",
+                room.getWorkers(),
+                room.getServed(),
+                room.getKitchen()
+                    .fixtures(),
+                room.getKitchen()
+                    .plants(),
+                room.getKitchen()
+                    .points(),
+                room.stockBonus(),
+                room.isPartying() ? ", party" : ""));
+        return true;
     }
 
     private void status(final ICommandSender sender, final @Nullable Found found) {
@@ -228,6 +275,10 @@ public class CommandAB extends CommandBase {
             this.debugOcItem(sender, args);
             return;
         }
+        if (args.length == 4 && ("break".equals(args[0]) || "breakroom".equals(args[0]))) {
+            this.debugBreak(sender, args);
+            return;
+        }
         if (args.length < 9 || !"pattern".equals(args[0])) {
             throw new WrongUsageException(this.getCommandUsage(sender));
         }
@@ -269,6 +320,35 @@ public class CommandAB extends CommandBase {
 
     /// `/ab debug ocitem <x> <y> <z> <slot> <name>` puts OpenComputers' item `name` (as its API names it: `server1`,
     /// `screen1`) into an inventory slot, since OC's items are sub-items whose damage values the API hides.
+    /// `/ab debug break x y z` sends the worker on the seat at `x y z` on its break now; `/ab debug breakroom x y z`
+    /// makes the break room machine there look for its workers and at its kitchen now. See Note [Break rooms].
+    private void debugBreak(final ICommandSender sender, final String[] args) {
+        final net.minecraft.world.World world = sender.getEntityWorld();
+        final int x = parseInt(sender, args[1]);
+        final int y = parseInt(sender, args[2]);
+        final int z = parseInt(sender, args[3]);
+        if ("breakroom".equals(args[0])) {
+            if (world.getTileEntity(x, y, z) instanceof gregtech.api.interfaces.tileentity.IGregTechTileEntity tile
+                && tile
+                    .getMetaTileEntity() instanceof com.gtnewhorizons.appliedbureaucratics.facility.breakroom.MTEBreakRoom room) {
+                room.hurryScan();
+                say(sender, "Scanning.");
+                return;
+            }
+            throw new WrongUsageException("No break room at " + x + " " + y + " " + z);
+        }
+        final com.gtnewhorizons.appliedbureaucratics.workforce.EntityWorkstationMount mount = com.gtnewhorizons.appliedbureaucratics.workforce.WorkforceActions
+            .mountAt(world, x, y, z);
+        final com.gtnewhorizons.appliedbureaucratics.workforce.Employment employment = mount == null
+            || mount.riddenByEntity == null ? null
+                : com.gtnewhorizons.appliedbureaucratics.workforce.Employment.of(mount.riddenByEntity);
+        if (employment == null) {
+            throw new WrongUsageException("Nobody on the seat at " + x + " " + y + " " + z);
+        }
+        employment.shift().nextBreakAt = 1;
+        say(sender, "Break due.");
+    }
+
     private void debugOcItem(final ICommandSender sender, final String[] args) {
         final TileEntity te = sender.getEntityWorld()
             .getTileEntity(parseInt(sender, args[1]), parseInt(sender, args[2]), parseInt(sender, args[3]));

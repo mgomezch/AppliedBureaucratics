@@ -7,6 +7,7 @@ import net.minecraft.item.ItemStack;
 import com.gtnewhorizons.appliedbureaucratics.block.BlockABCasing.Casing;
 import com.gtnewhorizons.appliedbureaucratics.block.ModBlocks;
 import com.gtnewhorizons.appliedbureaucratics.facility.ModMetaTileEntities;
+import com.gtnewhorizons.appliedbureaucratics.facility.breakroom.BreakRoomKind;
 import com.gtnewhorizons.appliedbureaucratics.item.ItemComponent;
 import com.gtnewhorizons.appliedbureaucratics.item.ModItems;
 
@@ -47,17 +48,7 @@ final class Recipes {
             new ItemStack(Items.dye, 1, 0),
             Blocks.emerald_block);
         GameRegistry.addShapelessRecipe(new ItemStack(ModItems.pinkSlip), Items.paper, new ItemStack(Items.dye, 1, 9));
-        GameRegistry.addRecipe(
-            new ItemStack(ModBlocks.breakRoomCounter),
-            "SSS",
-            "PCP",
-            "PPP",
-            'S',
-            Blocks.stone_slab,
-            'P',
-            Blocks.planks,
-            'C',
-            Items.cauldron);
+        breakRooms();
     }
 
     private static void registerMainframe(final ItemStack logic) {
@@ -193,5 +184,28 @@ final class Recipes {
             bits,
             new Object[] { "PMP", 'P', OrePrefixes.plate.get(Materials.Polyethylene), 'M',
                 OrePrefixes.stick.get(Materials.SteelMagnetic) });
+    }
+
+    /// The break room machines. See Note [Break rooms].
+    private static void breakRooms() {
+        final long bits = GTModHandler.RecipeBits.BITS;
+        GTModHandler.addCraftingRecipe(
+            ModMetaTileEntities.breakRooms.get(BreakRoomKind.WATER_COOLER),
+            bits,
+            new Object[] { "GUG", "PHP", "PCP", 'G', "blockGlass", 'U', ItemList.Electric_Pump_LV, 'P',
+                OrePrefixes.plate.get(Materials.Steel), 'H', ItemList.Hull_LV, 'C',
+                OrePrefixes.circuit.get(Materials.LV) });
+        GTModHandler.addCraftingRecipe(
+            ModMetaTileEntities.breakRooms.get(BreakRoomKind.COFFEE_MACHINE),
+            bits,
+            new Object[] { "PUP", "CHC", "PBP", 'U', ItemList.Electric_Pump_HV, 'P',
+                OrePrefixes.plate.get(Materials.StainlessSteel), 'C', OrePrefixes.circuit.get(Materials.HV), 'H',
+                ItemList.Hull_HV, 'B', new ItemStack(Items.cauldron) });
+        GTModHandler.addCraftingRecipe(
+            ModMetaTileEntities.breakRooms.get(BreakRoomKind.SNACK_MACHINE),
+            bits,
+            new Object[] { "GRG", "CHC", "PEP", 'G', "blockGlass", 'R', ItemList.Robot_Arm_EV, 'C',
+                OrePrefixes.circuit.get(Materials.EV), 'H', ItemList.Hull_EV, 'P',
+                OrePrefixes.plate.get(Materials.Titanium), 'E', ItemList.Conveyor_Module_EV });
     }
 }

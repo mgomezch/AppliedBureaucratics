@@ -62,7 +62,7 @@ public final class WorkforceEvents {
 
     @SubscribeEvent
     public void onAttack(final LivingAttackEvent event) {
-        if (ABConfig.workersInvulnerable && Employment.isOnShift(event.entityLiving)) {
+        if (ABConfig.workersInvulnerable && Employment.isAtWork(event.entityLiving)) {
             event.setCanceled(true);
         }
     }

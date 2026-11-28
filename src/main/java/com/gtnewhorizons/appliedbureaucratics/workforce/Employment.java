@@ -53,6 +53,7 @@ public final class Employment {
     private final String name;
     private final String title;
     private final long hiredAt;
+    private final Shift shift = new Shift();
 
     public Employment(final UUID employer, final Role role, final String name, final String title, final long hiredAt) {
         this.employer = employer;
@@ -82,6 +83,11 @@ public final class Employment {
         return this.hiredAt;
     }
 
+    /// The worker's break room, breaks and management. See Note [Break rooms].
+    public Shift shift() {
+        return this.shift;
+    }
+
     public static @Nullable Employment of(final Entity entity) {
         return entity instanceof IEmployable employable ? employable.ab$getEmployment() : null;
     }
@@ -89,6 +95,21 @@ public final class Employment {
     /// Whether `entity` is employed and seated at a workstation, so its own behaviour is suspended.
     public static boolean isOnShift(final Entity entity) {
         return entity.ridingEntity instanceof EntityWorkstationMount && of(entity) != null;
+    }
+
+    /// Whether `entity` is on a break, walked by [Breaks] instead of its own AI. See Note [Break rooms].
+    public static boolean isOnBreak(final Entity entity) {
+        // Riding anything but its own mount, such as a BiblioCraft seat it walked onto, it is still on its break.
+        if (entity.ridingEntity instanceof EntityWorkstationMount) {
+            return false;
+        }
+        final Employment employment = of(entity);
+        return employment != null && employment.shift.onBreak != null;
+    }
+
+    /// On shift or on a break: at work, so its own behaviour stays suspended and it takes no damage.
+    public static boolean isAtWork(final Entity entity) {
+        return isOnShift(entity) || isOnBreak(entity);
     }
 
     public static void set(final EntityLivingBase entity, final @Nullable Employment employment) {
@@ -103,12 +124,16 @@ public final class Employment {
         }
         final NBTTagCompound tag = data.getCompoundTag(TAG);
         try {
-            return new Employment(
+            final Employment employment = new Employment(
                 new UUID(tag.getLong("employerHi"), tag.getLong("employerLo")),
                 Role.values()[Math.min(Role.values().length - 1, tag.getByte("role"))],
                 tag.getString("name"),
                 tag.getString("title"),
                 tag.getLong("hiredAt"));
+            if (tag.hasKey("break")) {
+                employment.shift.onBreak = Shift.Break.load(tag.getCompoundTag("break"));
+            }
+            return employment;
         } catch (RuntimeException e) {
             return null;
         }
@@ -127,6 +152,9 @@ public final class Employment {
         tag.setString("name", employment.name);
         tag.setString("title", employment.title);
         tag.setLong("hiredAt", employment.hiredAt);
+        if (employment.shift.onBreak != null) {
+            tag.setTag("break", employment.shift.onBreak.save());
+        }
         data.setTag(TAG, tag);
     }
 }
