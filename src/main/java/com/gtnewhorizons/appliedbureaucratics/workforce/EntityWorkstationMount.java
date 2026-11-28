@@ -6,6 +6,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
 
 import com.gtnewhorizons.appliedbureaucratics.integration.bibliocraft.Furniture;
+import com.gtnewhorizons.appliedbureaucratics.util.Cadence;
 
 /// The invisible seat a contracted mob rides at its workstation, placed on a BiblioCraft seat. Riding one is what
 /// puts a worker on shift: see Note [Contracted mobs are held by mixins].
@@ -23,6 +24,8 @@ public class EntityWorkstationMount extends Entity {
     private int seatX;
     private int seatY;
     private int seatZ;
+    /// When to look at the seat and its workstation again. See Note [Spatial checks are staggered].
+    private final Cadence seatCheck = new Cadence(Cadence.SMALL);
 
     public EntityWorkstationMount(final World world) {
         super(world);
@@ -89,7 +92,7 @@ public class EntityWorkstationMount extends Entity {
             this.setDead();
             return;
         }
-        if (this.ticksExisted % 20 == 0) {
+        if (this.seatCheck.tick()) {
             if (!Furniture.SEAT.matches(this.worldObj.getBlock(this.seatX, this.seatY, this.seatZ))) {
                 if (this.riddenByEntity != null) {
                     this.riddenByEntity.mountEntity(null);

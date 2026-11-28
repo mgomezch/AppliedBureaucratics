@@ -10,6 +10,7 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.world.World;
 
+import com.gtnewhorizons.appliedbureaucratics.util.Cadence;
 import com.gtnewhorizons.appliedbureaucratics.workforce.Employment;
 
 /// A Gig Kiosk: "be your own boss." It enrols the uncontracted villagers within 16 blocks, up to 16, as gig workers
@@ -20,7 +21,7 @@ public class TileGigKiosk extends TileEntity {
     private static final WeakHashMap<World, Set<TileGigKiosk>> KIOSKS = new WeakHashMap<>();
 
     private int enrolled;
-    private int ticks;
+    private final Cadence scanCadence = new Cadence(Cadence.LARGE);
 
     public static Set<TileGigKiosk> in(final World world) {
         final Set<TileGigKiosk> kiosks = KIOSKS.get(world);
@@ -33,7 +34,8 @@ public class TileGigKiosk extends TileEntity {
 
     @Override
     public void updateEntity() {
-        if (this.worldObj == null || this.worldObj.isRemote || this.ticks++ % 100 != 0) {
+        // A scan of large reach. See Note [Spatial checks are staggered].
+        if (this.worldObj == null || this.worldObj.isRemote || !this.scanCadence.tick()) {
             return;
         }
         final List<?> villagers = this.worldObj.getEntitiesWithinAABB(

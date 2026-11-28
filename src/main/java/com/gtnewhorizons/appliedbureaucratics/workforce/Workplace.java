@@ -23,8 +23,9 @@ The yaw is Minecraft's: 0 faces south (+z), 90 west, 180 north, 270 east.
 
 EntityWorkstationMount holds the yaw and turns its rider to it every tick, on both sides.  The yaw is in the mount's
 DataWatcher, so the client's copy of the mount, which is made from a spawn packet and never reads the mount's NBT,
-turns the rider the same way as the server's.  The server looks for the workstation again every second, so a seat
-furnished after its worker sat down, or refurnished, turns its worker round.  A seat with no workstation keeps the
+turns the rider the same way as the server's.  The server looks for the workstation again every 5 s (Note
+[Spatial checks are staggered]), so a seat furnished after its worker sat down, or refurnished, turns its worker
+round.  A seat with no workstation keeps the
 yaw it had: when the worker sat down, the way the player who seated it was looking.
 
 A Mainframe terminal is a whole OC workstation, not just a screen: Workplace.atTerminal holds when the seat has an

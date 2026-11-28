@@ -12,6 +12,7 @@ import org.jspecify.annotations.Nullable;
 
 import com.gtnewhorizons.appliedbureaucratics.AppliedBureaucratics;
 import com.gtnewhorizons.appliedbureaucratics.integration.oc.TileDockingPad;
+import com.gtnewhorizons.appliedbureaucratics.util.Cadence;
 
 import li.cil.oc.api.Network;
 import li.cil.oc.api.internal.TextBuffer;
@@ -40,6 +41,7 @@ public class TileTerminalConcentrator extends TileEntity implements Environment 
     private boolean joined;
     private boolean powered;
     private int ticks;
+    private final Cadence scanCadence = new Cadence(Cadence.SMALL);
     private List<Terminal> terminals = Collections.emptyList();
     private List<TileDockingPad> pads = Collections.emptyList();
     private List<String> screen = Collections.emptyList();
@@ -98,7 +100,7 @@ public class TileTerminalConcentrator extends TileEntity implements Environment 
         if (this.powered && this.node instanceof Connector connector) {
             connector.changeBuffer(connector.globalBufferSize() - connector.globalBuffer());
         }
-        if (this.ticks % 100 == 0) {
+        if (this.scanCadence.tick()) {
             this.terminals = this.scan();
             this.screenChanged = true;
         }

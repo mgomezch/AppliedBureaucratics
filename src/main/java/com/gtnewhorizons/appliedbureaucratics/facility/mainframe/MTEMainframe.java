@@ -47,6 +47,7 @@ import com.gtnewhorizons.appliedbureaucratics.facility.Workstations;
 import com.gtnewhorizons.appliedbureaucratics.facility.breakroom.TileBreakRoomCounter;
 import com.gtnewhorizons.appliedbureaucratics.facility.internet.MTEInternet;
 import com.gtnewhorizons.appliedbureaucratics.item.ItemComponent;
+import com.gtnewhorizons.appliedbureaucratics.util.Cadence;
 import com.gtnewhorizons.appliedbureaucratics.workforce.Employment;
 import com.gtnewhorizons.appliedbureaucratics.workforce.ManagerKind;
 import com.gtnewhorizons.appliedbureaucratics.workforce.Workplace;
@@ -126,6 +127,9 @@ public class MTEMainframe extends MTEComputeFacility<MTEMainframe> implements IS
     private int amenities;
     private boolean crowded;
     private int managerPenalty;
+    private List<OrgChart.Manager> managers = new ArrayList<>();
+    private final Cadence officeSurvey = new Cadence(Cadence.SMALL);
+    private final Cadence managerSurvey = new Cadence(Cadence.LARGE);
     private boolean butcher;
     private int blacksmiths;
     private long filing;
@@ -297,7 +301,10 @@ public class MTEMainframe extends MTEComputeFacility<MTEMainframe> implements IS
     @Override
     protected void facilityTick() {
         this.slots.setSlotCount(this.isLinked() ? 0 : 1);
-        if (this.ticks % 100 == 0 && this.mMachine) {
+        if (this.managerSurvey.tick() && this.mMachine) {
+            this.surveyManagers();
+        }
+        if (this.officeSurvey.tick() && this.mMachine) {
             this.surveyOffice();
         }
         if (this.ticks % 20 == 0) {
@@ -336,6 +343,47 @@ public class MTEMainframe extends MTEComputeFacility<MTEMainframe> implements IS
     protected double planningShare() {
         final MTEInternet internet = this.link;
         return this.isLinked() && internet != null ? internet.planningShareForMembers() : super.planningShare();
+    }
+
+    /// The managers in their offices within 24 blocks: a scan of large reach, so on a slower cadence than the office.
+    /// See Note [Spatial checks are staggered].
+    private void surveyManagers() {
+        final World world = this.getBaseMetaTileEntity()
+            .getWorld();
+        final IGregTechTileEntity tile = this.getBaseMetaTileEntity();
+        final List<OrgChart.Manager> managers = new ArrayList<>();
+        final List<ManagerUpkeep.Upkept> kinds = new ArrayList<>();
+        final java.util.EnumSet<ManagerKind> present = java.util.EnumSet.noneOf(ManagerKind.class);
+        for (final Workstations.Seated seated : Workstations
+            .within(world, tile.getXCoord() + 0.5, tile.getYCoord() + 0.5, tile.getZCoord() + 0.5, 24)) {
+            final ManagerKind kind = ManagerKind.of(seated.mob());
+            if (seated.employment()
+                .getRole() != Employment.Role.MANAGER || kind == null
+                || !isManagerOffice(world, seated)) {
+                continue;
+            }
+            kinds.add(
+                new ManagerUpkeep.Upkept(
+                    kind,
+                    seated.employment()
+                        .getEmployer()));
+            managers.add(
+                new OrgChart.Manager(
+                    seated.x(),
+                    seated.y(),
+                    seated.z(),
+                    kind.efficiency,
+                    kind.roles,
+                    this.upkeep.isPaid(kind)));
+            present.add(kind);
+        }
+        int penalty = 0;
+        for (final ManagerKind kind : present) {
+            penalty += kind.moralePenalty;
+        }
+        this.upkeep.setManagers(kinds);
+        this.managers = managers;
+        this.managerPenalty = penalty;
     }
 
     private void surveyOffice() {
@@ -407,36 +455,6 @@ public class MTEMainframe extends MTEComputeFacility<MTEMainframe> implements IS
                 this.blacksmiths++;
             }
         }
-        final List<OrgChart.Manager> managers = new ArrayList<>();
-        final List<ManagerUpkeep.Upkept> kinds = new ArrayList<>();
-        final java.util.EnumSet<ManagerKind> present = java.util.EnumSet.noneOf(ManagerKind.class);
-        for (final Workstations.Seated seated : Workstations
-            .within(world, tile.getXCoord() + 0.5, tile.getYCoord() + 0.5, tile.getZCoord() + 0.5, 24)) {
-            final ManagerKind kind = ManagerKind.of(seated.mob());
-            if (seated.employment()
-                .getRole() != Employment.Role.MANAGER || kind == null
-                || !isManagerOffice(world, seated)) {
-                continue;
-            }
-            kinds.add(
-                new ManagerUpkeep.Upkept(
-                    kind,
-                    seated.employment()
-                        .getEmployer()));
-            managers.add(
-                new OrgChart.Manager(
-                    seated.x(),
-                    seated.y(),
-                    seated.z(),
-                    kind.efficiency,
-                    kind.roles,
-                    this.upkeep.isPaid(kind)));
-            present.add(kind);
-        }
-        int penalty = 0;
-        for (final ManagerKind kind : present) {
-            penalty += kind.moralePenalty;
-        }
         // Robots, on a Mainframe linked to an Internet. See Note [Robots].
         double botFte = 0;
         int robots = 0;
@@ -469,8 +487,7 @@ public class MTEMainframe extends MTEComputeFacility<MTEMainframe> implements IS
         }
         this.robots = robots;
         this.botnetFactor = Math.min(1.0, 0.5 + 0.0625 * captcha);
-        this.upkeep.setManagers(kinds);
-        final OrgChart.Result chart = OrgChart.build(staff, managers, 2);
+        final OrgChart.Result chart = OrgChart.build(staff, this.managers, 2);
         final List<OrgUnit> roots = new ArrayList<>(chart.roots());
         if (botFte > 0) {
             roots.add(
@@ -484,7 +501,6 @@ public class MTEMainframe extends MTEComputeFacility<MTEMainframe> implements IS
         this.workers = staff.size();
         this.amenities = staff.isEmpty() ? 0 : amenitySum / staff.size();
         this.crowded = crowdedSeats * 2 > staff.size() && !staff.isEmpty();
-        this.managerPenalty = penalty;
         this.butcher = hasButcher;
     }
 

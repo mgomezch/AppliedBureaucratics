@@ -14,6 +14,7 @@ import org.jspecify.annotations.Nullable;
 
 import com.gtnewhorizons.appliedbureaucratics.integration.ae2.IComputeGrid;
 import com.gtnewhorizons.appliedbureaucratics.integration.bibliocraft.Furniture;
+import com.gtnewhorizons.appliedbureaucratics.util.Cadence;
 
 import appeng.api.networking.GridFlags;
 import appeng.api.networking.IGrid;
@@ -36,7 +37,10 @@ public abstract class MTEComputeFacility<T extends MTEEnhancedMultiBlockBase<T>>
 
     private @Nullable AENetworkProxy proxy;
     protected final FacilitySlots slots = new FacilitySlots(this);
-    protected int ticks;
+    /// Starts anywhere in a minute, so facilities loaded together do their periodic work on different ticks.
+    protected int ticks = java.util.concurrent.ThreadLocalRandom.current()
+        .nextInt(1200);
+    private final Cadence structureCheck = new Cadence(Cadence.LARGE);
     private @Nullable Double pinnedShare;
     private @Nullable Boolean crunchOverride;
 
@@ -108,7 +112,7 @@ public abstract class MTEComputeFacility<T extends MTEEnhancedMultiBlockBase<T>>
         // while every chunk the structure may reach is loaded: a check over an unloaded chunk fails, and GregTech then
         // switches the machine off until a player turns it on again.
         final int r = this.structureReach();
-        if (this.ticks % 200 == 199 && this.world()
+        if (this.structureCheck.tick() && this.world()
             .checkChunksExist(this.x() - r, this.y() - r, this.z() - r, this.x() + r, this.y() + r, this.z() + r)) {
             this.onMachineBlockUpdate();
         }

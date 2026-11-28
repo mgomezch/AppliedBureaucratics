@@ -34,6 +34,7 @@ import com.gtnewhorizons.appliedbureaucratics.facility.FacilitySlots;
 import com.gtnewhorizons.appliedbureaucratics.facility.IComputeFacility;
 import com.gtnewhorizons.appliedbureaucratics.facility.breakroom.TileBreakRoomCounter;
 import com.gtnewhorizons.appliedbureaucratics.integration.ae2.IComputeGrid;
+import com.gtnewhorizons.appliedbureaucratics.util.Cadence;
 import com.gtnewhorizons.appliedbureaucratics.workforce.Employment;
 
 import appeng.api.networking.GridFlags;
@@ -64,7 +65,10 @@ public class TileRequisitionTray extends TileEntity
     private final Payroll payroll = new Payroll();
     private final ItemStack[] inventory = new ItemStack[2];
     private boolean ready;
-    private int ticks;
+    private int ticks = java.util.concurrent.ThreadLocalRandom.current()
+        .nextInt(1200);
+    /// See Note [Spatial checks are staggered].
+    private final Cadence surveyCadence = new Cadence(Cadence.SMALL);
     private DeskSurvey survey = DeskSurvey.NOTHING;
     private FacilityOutput output = FacilityOutput.OFF;
     private Bottleneck bottleneck = Bottleneck.NO_POWER;
@@ -98,7 +102,7 @@ public class TileRequisitionTray extends TileEntity
         if (this.slots.hasSavedJobs() && node != null && node.getGrid() != null) {
             this.slots.restore();
         }
-        if (this.ticks % 100 == 0) {
+        if (this.surveyCadence.tick()) {
             this.survey = DeskSurvey.of(this.worldObj, this.xCoord, this.yCoord, this.zCoord);
         }
         if (this.ticks % 20 == 0) {
